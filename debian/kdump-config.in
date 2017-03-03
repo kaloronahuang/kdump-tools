@@ -612,7 +612,7 @@ define_stampdir()
 		# Looping to give time to network to settle
 		counter=0
 		while [ $counter -lt 5 ];do
-			THIS_HOST="$(hostname -I)"
+			THIS_HOST="$(ip addr show up | sed -n 's/^\s*inet\s\+\([^/ ]*\).*$/\1/p' | tail -n1)"
 			# shellcheck disable=SC2086
 			set -- $THIS_HOST
 			THIS_HOST=$1
