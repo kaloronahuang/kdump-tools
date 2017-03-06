@@ -30,7 +30,9 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin
 NAME=${NAME:="kdump-config"}
 
 . /lib/lsb/init-functions
-. /lib/init/vars.sh
+if test -e /lib/init/vars.sh; then
+	. /lib/init/vars.sh
+fi
 
 # Global Setup
 KDUMP_DEFAULTS=/etc/default/kdump-tools
