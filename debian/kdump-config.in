@@ -37,7 +37,6 @@ KDUMP_DEFAULTS=/etc/default/kdump-tools
 [ -r $KDUMP_DEFAULTS ] && . $KDUMP_DEFAULTS
 
 KEXEC=/sbin/kexec
-[ -e $KEXEC ] || exit 1;
 
 KVER=$(uname -r)
 ARCH=$(uname -m)
@@ -518,6 +517,8 @@ kernel_version=$1
 # Returns: none. prints warnings or exit
 kdump_load()
 {
+	[ -x $KEXEC ] || exit 1
+
 	# assemble the kexec command used to load the kdump kernel
 	KEXEC_CMD="$KEXEC -p"
 
@@ -576,6 +577,8 @@ kdump_load()
 # Returns: none. prints warnings or exit
 kdump_unload()
 {
+	[ -x $KEXEC ] || exit 1
+
 	if check_secure_boot || check_securelevel; then
 		$KEXEC -s -p -u
 	else
