@@ -32,10 +32,13 @@ KDUMP_INITRD=/var/lib/kdump/initrd.img
 # KDUMP_NUM_DUMPS - This variable controls how many dump files are kept on
 #     the machine to prevent running out of disk space. If set to 0 or unset,
 #     the variable is ignored and no dump files are automatically purged.
+# KDUMP_COMPRESSION - Compress the dumpfile. No compression is used by default.
+#     Supported compressions: bzip2, gzip, lz4, xz
 KDUMP_COREDIR="/var/crash"
 #KDUMP_FAIL_CMD="reboot -f"
 #KDUMP_DUMP_DMESG=
 #KDUMP_NUM_DUMPS=
+#KDUMP_COMPRESSION=
 
 
 # ---------------------------------------------------------------------------

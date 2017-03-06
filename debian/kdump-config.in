@@ -635,6 +635,78 @@ define_stampdir()
 }
 
 
+check_compression() {
+	case "$KDUMP_COMPRESSION" in
+	  bzip2)
+		if ! command -v bzip2 > /dev/null; then
+			echo "Error: Compression set to bzip2, but bzip2 command not found. Disabling compression." >&2
+			KDUMP_COMPRESSION=
+		fi
+		;;
+	  gzip)
+		if ! command -v gzip > /dev/null; then
+			echo "Error: Compression set to gzip, but gzip command not found. Disabling compression." >&2
+			KDUMP_COMPRESSION=
+		fi
+		;;
+	  lz4)
+		if ! command -v lz4 > /dev/null; then
+			echo "Error: Compression set to lz4, but lz4 command not found. Disabling compression." >&2
+			KDUMP_COMPRESSION=
+		fi
+		;;
+	  xz)
+		if test ! -x /usr/bin/xz; then
+			echo "Error: Compression set to xz, but /usr/bin/xz not found. Disabling compression." >&2
+			KDUMP_COMPRESSION=
+		fi
+		;;
+	  *)
+		if test -n "$KDUMP_COMPRESSION"; then
+			echo "Error: Compression '$KDUMP_COMPRESSION' not supported. Disabling compression." >&2
+			KDUMP_COMPRESSION=
+		fi
+	esac
+}
+
+
+compress() {
+	case "$KDUMP_COMPRESSION" in
+	  bzip2)
+		bzip2 -c
+		;;
+	  gzip)
+		gzip -c
+		;;
+	  lz4)
+		lz4 -c
+		;;
+	  xz)
+		/usr/bin/xz -c
+		;;
+	  *)
+		cat
+	esac
+}
+
+compression_extension() {
+	case "$KDUMP_COMPRESSION" in
+	  bzip2)
+		echo ".bz2"
+		;;
+	  gzip)
+		echo ".gz"
+		;;
+	  lz4)
+		echo ".lz4"
+		;;
+	  xz)
+		echo ".xz"
+		;;
+	esac
+}
+
+
 # Saving the vmcore:
 #	Our priorities are:
 #	  1. If the makedumpfile config link is valid, use that
@@ -648,8 +720,8 @@ kdump_save_core()
 {
 	KDUMP_STAMP=$(date +"%Y%m%d%H%M")
 	KDUMP_STAMPDIR=$(define_stampdir "$KDUMP_STAMP" "$KDUMP_COREDIR")
-	KDUMP_CORETEMP="$KDUMP_STAMPDIR/dump-incomplete"
-	KDUMP_COREFILE="$KDUMP_STAMPDIR/dump.$KDUMP_STAMP"
+	KDUMP_CORETEMP="$KDUMP_STAMPDIR/dump-incomplete$(compression_extension)"
+	KDUMP_COREFILE="$KDUMP_STAMPDIR/dump.$KDUMP_STAMP$(compression_extension)"
 	KDUMP_DMESGFILE="$KDUMP_STAMPDIR/dmesg.$KDUMP_STAMP"
 
 	# If we use NFS, verify that we can mount the FS
@@ -702,7 +774,7 @@ kdump_save_core()
 
 	log_action_msg "running makedumpfile $MAKEDUMP_ARGS $vmcore_file $KDUMP_CORETEMP"
 	# shellcheck disable=SC2086
-	makedumpfile $MAKEDUMP_ARGS $vmcore_file "$KDUMP_CORETEMP"
+	makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress > "$KDUMP_CORETEMP"
 	ERROR=$?
 	if [ $ERROR -ne 0 ] ; then
 		log_failure_msg "$NAME: makedumpfile failed, falling back to 'cp'"
@@ -783,7 +855,7 @@ kdump_save_core_to_ftp()
 	FTP_STAMP=$(date +"%Y%m%d%H%M")
 	FTP_STAMPDIR=$(define_stampdir "" "${FTP_COREDIR}")
 
-	FTP_COREFILE="${FTP_STAMPDIR}dump.$FTP_STAMP"
+	FTP_COREFILE="${FTP_STAMPDIR}dump.$FTP_STAMP$(compression_extension)"
 	FTP_TMPDMESG="/tmp/dmesg.ftp.$FTP_STAMP"
 	FTP_DMESGFILE="${FTP_STAMPDIR}dmesg.$FTP_STAMP"
 	ERROR=0
@@ -804,7 +876,7 @@ kdump_save_core_to_ftp()
 	[ "${FTP_MAKEDUMP_ARGS#-F*}" != "${FTP_MAKEDUMP_ARGS}" ] || FTP_MAKEDUMP_ARGS="${FTP_MAKEDUMP_ARGS} -F"
 	log_action_msg "sending makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file via FTP to $FTP_REMOTE_HOST:$FTP_COREFILE"
 	# shellcheck disable=SC2086
-	makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file | busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_COREFILE" -
+	makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file | compress | busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_COREFILE" -
 	ERROR=$?
 
 	# did we succeed?
@@ -851,8 +923,8 @@ kdump_save_core_to_ssh()
 	SSH_STAMP=$(date +"%Y%m%d%H%M")
 	SSH_STAMPDIR=$(define_stampdir "$SSH_STAMP" "$KDUMP_COREDIR")
 
-	SSH_CORETEMP="$SSH_STAMPDIR/dump-incomplete"
-	SSH_COREFILE="$SSH_STAMPDIR/dump.$SSH_STAMP"
+	SSH_CORETEMP="$SSH_STAMPDIR/dump-incomplete$(compression_extension)"
+	SSH_COREFILE="$SSH_STAMPDIR/dump.$SSH_STAMP$(compression_extension)"
 	SSH_TMPDMESG="/tmp/dmesg.ssh.$SSH_STAMP"
 	SSH_DMESGFILE="$SSH_STAMPDIR/dmesg.$SSH_STAMP"
 
@@ -880,7 +952,7 @@ kdump_save_core_to_ssh()
 	[ "${SSH_MAKEDUMP_ARGS#-F*}" != "${SSH_MAKEDUMP_ARGS}" ] || SSH_MAKEDUMP_ARGS="${SSH_MAKEDUMP_ARGS} -F"
 	log_action_msg "sending makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file to $SSH_REMOTE_HOST : $SSH_CORETEMP"
 	# shellcheck disable=SC2086
-	makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file | ssh -i $SSH_KEY "$SSH_REMOTE_HOST" dd "of=$SSH_CORETEMP"
+	makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file | compress | ssh -i $SSH_KEY "$SSH_REMOTE_HOST" dd "of=$SSH_CORETEMP"
 	ERROR=$?
 	if [ $ERROR -ne 0 ] ; then
 		log_failure_msg "$NAME: makedumpfile failed, falling back to 'scp'"
@@ -1086,6 +1158,7 @@ case "$1" in
 	exit 0;
 	;;
   savecore)
+	check_compression
 	if [ -n "$FTP" ]; then
 		kdump_save_core_to_ftp
 	fi
