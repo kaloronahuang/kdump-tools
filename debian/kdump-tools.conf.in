@@ -12,7 +12,7 @@ USE_KDUMP=1
 # KDUMP_KERNEL - A full pathname to a kdump kernel.
 # KDUMP_INITRD - A full pathname to the kdump initrd (if used).
 #     If these are not set, kdump-config will try to use the current kernel
-#     and initrd if it is relocatable.  Otherwise, you will need to specify 
+#     and initrd if it is relocatable.  Otherwise, you will need to specify
 #     these manually.
 KDUMP_KERNEL=/var/lib/kdump/vmlinuz
 KDUMP_INITRD=/var/lib/kdump/initrd.img
@@ -53,12 +53,12 @@ KDUMP_COREDIR="/var/crash"
 # Kexec/Kdump args
 # KDUMP_KEXEC_ARGS - Additional arguments to the kexec command used to load
 #     the kdump kernel
-#     Example - Use this option on x86 systems with PAE and more than 
+#     Example - Use this option on x86 systems with PAE and more than
 #     4 gig of memory:
 #         KDUMP_KEXEC_ARGS="--elf64-core-headers"
-# KDUMP_CMDLINE - The default is to use the contents of /proc/cmdline.  
+# KDUMP_CMDLINE - The default is to use the contents of /proc/cmdline.
 #     Set this variable to override /proc/cmdline.
-# KDUMP_CMDLINE_APPEND - Additional arguments to append to the command line 
+# KDUMP_CMDLINE_APPEND - Additional arguments to append to the command line
 #     for the kdump kernel.  If unset, it defaults to
 #     "@KDUMP_CMDLINE_APPEND@"
 #KDUMP_KEXEC_ARGS=""
@@ -79,7 +79,7 @@ KDUMP_COREDIR="/var/crash"
 #           timestamped directory when sending files to the remote server.
 #           'ip' is the default.
 # NFS -     Hostname and mount point of the NFS server configured to receive
-#           the crash dump. The syntax must be {HOSTNAME}:{MOUNTPOINT} 
+#           the crash dump. The syntax must be {HOSTNAME}:{MOUNTPOINT}
 #           (e.g. remote:/var/crash)
 # NFS_TIMEO - Timeout before NFS retries a request. See man nfs(5) for details.
 # NFS_RETRANS - Number of times NFS client retries a request. See man nfs(5) for details.
@@ -88,7 +88,7 @@ KDUMP_COREDIR="/var/crash"
 # SSH_KEY="<path>"
 #
 # HOSTTAG="hostname|[ip]"
-# 
+#
 # NFS="<nfs mount>"
 #
 # NFS_TIMEO="600"
