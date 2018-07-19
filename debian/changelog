@@ -44,6 +44,9 @@ makedumpfile (1:1.6.4-1) UNRELEASED; urgency=medium
       - [PATCH] Update maintainers (Masaki Tachibana) bc7420b
 
   * Remove 0003-sparsemem_extreme.patch, applied upstream.
+  * Update pt_PT debconf translation, thanks Rui Branco. (Closes: #898280)
+  * Update ru debconf translation, thanks Lev Lamberov. (Closes: #883139)
+  * Update da debconf translation, thanks Joe Dalton. (Closes: #856784)
 
  -- Thadeu Lima de Souza Cascardo <cascardo@debian.org>  Thu, 19 Jul 2018 16:34:06 -0300
 
