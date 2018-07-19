@@ -43,6 +43,8 @@ makedumpfile (1:1.6.4-1) UNRELEASED; urgency=medium
       - [PATCH] Fix some compilation warnings on x86 system (Kazuhito Hagio) 2148e43
       - [PATCH] Update maintainers (Masaki Tachibana) bc7420b
 
+  * Remove 0003-sparsemem_extreme.patch, applied upstream.
+
  -- Thadeu Lima de Souza Cascardo <cascardo@debian.org>  Thu, 19 Jul 2018 16:34:06 -0300
 
 makedumpfile (1:1.6.3-2) unstable; urgency=medium
