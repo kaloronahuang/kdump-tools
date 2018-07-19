@@ -11,6 +11,17 @@ function report()
 	echo "makedumpfile: crash test: $@"
 }
 
+function wait_for_systemd_service()
+{
+	TIMEOUT=180
+	while
+		! systemctl is-active kdump-tools &&
+		! systemctl is-failed kdump-tools &&
+		[ $TIMEOUT -gt 0 ] ; do
+			TIMEOUT=$((TIMEOUT - 1))
+	done
+}
+
 case "$AUTOPKGTEST_REBOOT_MARK" in
   "")
 	report "rebooting to have crashkernel on cmdline"
@@ -20,6 +31,11 @@ case "$AUTOPKGTEST_REBOOT_MARK" in
 	report "checking for crashkernel"
 	if ! grep crashkernel /proc/cmdline > /dev/null; then
 		error "no crashkernel option on cmdline"
+	fi
+	report "waiting for kdump-tools systemd service"
+	wait_for_systemd_service
+	if systemctl is-failed kdump-tools; then
+		error "kdump-tools systemd service failed"
 	fi
 	report "checking kdump-config status"
 	if ! kdump-config status | grep ": ready to kdump" > /dev/null; then

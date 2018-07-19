@@ -47,6 +47,7 @@ makedumpfile (1:1.6.4-1) UNRELEASED; urgency=medium
   * Update pt_PT debconf translation, thanks Rui Branco. (Closes: #898280)
   * Update ru debconf translation, thanks Lev Lamberov. (Closes: #883139)
   * Update da debconf translation, thanks Joe Dalton. (Closes: #856784)
+  * Make ADT check for systemd service.
 
  -- Thadeu Lima de Souza Cascardo <cascardo@debian.org>  Thu, 19 Jul 2018 16:34:06 -0300
 
