@@ -11,6 +11,12 @@ function report()
 	echo "makedumpfile: crash test: $@"
 }
 
+function skip()
+{
+	echo "makedumpfile: SKIP: crash test: $@"
+	exit 0
+}
+
 function wait_for_systemd_service()
 {
 	TIMEOUT=180
@@ -22,6 +28,17 @@ function wait_for_systemd_service()
 	done
 }
 
+function get_crash_kernel_size()
+{
+	if kexec --print-ckr-size > /dev/null 2> /dev/null ; then
+		kexec --print-ckr-size
+	elif [ -e /sys/kernel/kexec_crash_size ] ; then
+		cat /sys/kernel/kexec_crash_size
+	else
+		echo 0
+	fi
+}
+
 case "$AUTOPKGTEST_REBOOT_MARK" in
   "")
 	report "rebooting to have crashkernel on cmdline"
@@ -31,6 +48,11 @@ case "$AUTOPKGTEST_REBOOT_MARK" in
 	report "checking for crashkernel"
 	if ! grep crashkernel /proc/cmdline > /dev/null; then
 		error "no crashkernel option on cmdline"
+	fi
+	report "checking crash kernel size"
+	crksize=`get_crash_kernel_size`
+	if [ $crksize -eq 0 ]; then
+		skip "crash kernel size is 0, possibly not enough memory"
 	fi
 	report "waiting for kdump-tools systemd service"
 	wait_for_systemd_service
