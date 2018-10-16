@@ -1,4 +1,4 @@
-makedumpfile (1:1.6.4-3) UNRELEASED; urgency=medium
+makedumpfile (1:1.6.4-3) unstable; urgency=medium
 
   * Reload kdump after memory/CPU hotplug. (LP: #1655280)
   * Fix adding crashkernel to zipl.conf when no quotation mark is used.
