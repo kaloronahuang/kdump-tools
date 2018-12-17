@@ -1,3 +1,9 @@
+makedumpfile (1:1.6.5-1) UNRELEASED; urgency=medium
+
+  * Update to new upstream version 1.6.5.
+
+ -- Thadeu Lima de Souza Cascardo <cascardo@debian.org>  Mon, 17 Dec 2018 15:21:24 -0200
+
 makedumpfile (1:1.6.4-3) unstable; urgency=medium
 
   * Reload kdump after memory/CPU hotplug. (LP: #1655280)
