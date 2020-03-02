@@ -1,3 +1,9 @@
+makedumpfile (1:1.6.7-1) UNRELEASED; urgency=medium
+
+  * Update to new upstream version 1.6.7.
+
+ -- Thadeu Lima de Souza Cascardo <cascardo@debian.org>  Mon, 02 Mar 2020 04:48:06 -0300
+
 makedumpfile (1:1.6.6-4) unstable; urgency=medium
 
   * Let the kernel decide the crashkernel offset for ppc64el (LP: #1741860)
