@@ -3,6 +3,7 @@ makedumpfile (1:1.6.7-3) UNRELEASED; urgency=medium
   * Trim trailing whitespace.
   * Wrap long lines in changelog entries: 1:1.6.4-1, 1:1.6.3-1, 1:1.6.2-
     0.1, 1:1.6.1-1, 1:1.6.0-1, 1:1.5.9-6, 1:1.5.9-1, 1.5.5-2.
+  * Fix day-of-week for changelog entry 1:1.5.9-6.
 
  -- Debian Janitor <janitor@jelmer.uk>  Mon, 27 Apr 2020 14:12:31 +0000
 
@@ -650,7 +651,7 @@ makedumpfile (1:1.5.9-6) sid; urgency=medium
     /etc/default/kdump-tools is also modified to use the cio_ignore parameter
     when kexec loads the crash kernel (LP: #1570775)
 
- -- Louis Bouchard <louis.bouchard@ubuntu.com>  Tue, 26 May 2016 15:28:43 +0200
+ -- Louis Bouchard <louis.bouchard@ubuntu.com>  Thu, 26 May 2016 15:28:43 +0200
 
 makedumpfile (1:1.5.9-5) sid; urgency=medium
 
