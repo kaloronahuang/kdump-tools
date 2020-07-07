@@ -2,6 +2,10 @@
 #
 # This kdump-tools hook includes kdump sysctl overrides to the
 # kdump minimal initrd.
+#
+# OPTION=VAR is a control provided only by Ubuntu initramfs-tools,
+# so this is innocuous and harmless on Debian - kept here for
+# better code sync between Debian and Ubuntu.
 OPTION=KDUMP
 
 PREREQ=""
@@ -16,6 +20,14 @@ prereqs)
 	exit 0
 	;;
 esac
+
+# In Debian we don't have the fine-tuned control of what hooks to run
+# based on OPTION=VAR (like Ubuntu). So, we need the folowing check
+# in order to prevent this hook to run for regular initrds - it should
+# only be executed for kdump smaller initrd.
+if [ "${CONFDIR}" != "/var/lib/kdump/initramfs-tools" ]; then
+	exit 0
+fi
 
 . /usr/share/initramfs-tools/hook-functions
 
