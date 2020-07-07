@@ -56,6 +56,10 @@ if ! [ -e "$initramfsdir/initramfs.conf" ];then
 	exit 2
 fi
 
+# Mark our custom initramfs.conf to indicate that kdump-tools
+# hooks/scripts should run/get included in our minimal initrd.
+echo "KDUMP=y" >> $initramfsdir/initramfs.conf
+
 # Cleaning up existing initramfs with same version
 # as mkinitramfs do not have a force option
 if [ -e "$kdumpdir/initrd.img-${version}" ];then

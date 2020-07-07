@@ -281,7 +281,18 @@ in order to collect a dump in this case. If the users want more panic triggers,
 like panic on OOM, or when a NMI is detected, it's recommended that they edit
 the sysctl configuration files (/etc/sysctl.conf or files on /etc/sysctl.d) in
 order to do so, and/or apply the sysctl settings with sysctl tool.
-
+.SS Sysctl handling *during a kdump*
+.PP
+kdump-tools allows users to configure sysctls overrides on kdump environment;
+this is specially useful to prevent sysctls from the regular boot to mess with
+the resource-impaired kdump environment.
+.PP
+The mechanism is restricted to kdump boot and will not affect regular boots. In
+order to add overrides, user should edit the file
+.I /etc/kdump/sysctl.conf.
+.PP
+By default, hugepages overrides are set and is highly recommended to keep them
+in the file, to prevent kdump out-of-memory conditions.
 .\"
 .\" # ---------------------------------------------------------------------------
 .\"
@@ -310,6 +321,9 @@ an init script to automatically load a kdump kernel, or save a vmcore and reboot
 the
 .B kdump-tools 
 configuration file
+.TP 25
+.I /etc/kdump/sysctl.conf
+kdump-tools sysctl override file
 .TP 25
 .I /var/crash/kernel_link
 a link to the current debug kernel

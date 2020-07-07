@@ -43,6 +43,7 @@ KVER=`uname -r`
 ARCH=`uname -m`
 
 # Set up defaults
+KDUMP_SYSCTL_FILE="/etc/kdump/sysctl.conf"
 KDUMP_COREDIR=${KDUMP_COREDIR:=/var/crash}
 KDUMP_DUMP_DMESG=${KDUMP_DUMP_DMESG:=1}
 KDUMP_DIR="/var/lib/kdump"
@@ -894,6 +895,20 @@ function kdump_propagate()
 
 }
 
+# Checks if kdump sysctl overrides changed and if so,
+# forces kdump initrd to be recreated.
+function check_sysctl_change()
+{
+	kernel_version=$1
+
+	cmp -s "${KDUMP_SYSCTL_FILE}" "${KDUMP_DIR}/latest_sysctls-${kernel_version}"
+	if [ $? != 0 ]; then
+		rm -f "$KDUMP_DIR/initrd.img-${kernel_version}"
+	fi
+
+	cp ${KDUMP_SYSCTL_FILE} "${KDUMP_DIR}/latest_sysctls-${kernel_version}"
+}
+
 load()
 {
 	if [ "$DUMP_MODE" == "fadump" ]; then
@@ -901,6 +916,7 @@ load()
 		fadump_register
 	else
 		check_kdump_support;
+		check_sysctl_change $KVER
 		kdump_create_symlinks $KVER;
 		manage_symlinks;
 		locate_kdump_kernel;
