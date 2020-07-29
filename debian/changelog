@@ -1,11 +1,15 @@
-makedumpfile (1:1.6.7-3) UNRELEASED; urgency=medium
+makedumpfile (1:1.6.7-3) unstable; urgency=medium
 
+  [ Debian Janitor ]
   * Trim trailing whitespace.
   * Wrap long lines in changelog entries: 1:1.6.4-1, 1:1.6.3-1, 1:1.6.2-
     0.1, 1:1.6.1-1, 1:1.6.0-1, 1:1.5.9-6, 1:1.5.9-1, 1.5.5-2.
   * Fix day-of-week for changelog entry 1:1.5.9-6.
 
- -- Debian Janitor <janitor@jelmer.uk>  Mon, 27 Apr 2020 14:12:31 +0000
+  [ Thadeu Lima de Souza Cascardo ]
+  * Fix build with GCC 10 (Closes: #957518)
+
+ -- Thadeu Lima de Souza Cascardo <cascardo@debian.org>  Tue, 28 Jul 2020 21:40:32 -0300
 
 makedumpfile (1:1.6.7-2) unstable; urgency=medium
 
