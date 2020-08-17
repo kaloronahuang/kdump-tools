@@ -218,8 +218,8 @@ kern_version=$2
 # Create a symlink
 function create_symlink()
 {
-link=$1
-kernel_version=$2
+	link=$1
+	kernel_version=$2
 
 	log_action_msg "Creating symlink $KDUMP_DIR/${link}"
 	if [ $link == "vmlinuz" ];then
@@ -272,7 +272,7 @@ function check_fadump_support()
 		log_failure_msg "Try passing \"fadump=on\" to enable fadump"
 		[ ! $DRY_RUN ] && exit 1;
 	fi
-        if [ -n "$NFS" ] && [ -n "$SSH" ];then
+	if [ -n "$NFS" ] && [ -n "$SSH" ];then
 		log_failure_msg "\$SSH and \$NFS cannot be defined concurrently"
 		[ ! $DRY_RUN ] && exit 1;
 	fi
@@ -301,7 +301,7 @@ function check_kdump_support()
 		log_failure_msg "no crashkernel= parameter in the kernel cmdline"
 		[ ! $DRY_RUN ] && exit 1;
 	fi
-        if [ -n "$NFS" ] && [ -n "$SSH" ];then
+	if [ -n "$NFS" ] && [ -n "$SSH" ];then
 		log_failure_msg "\$SSH and \$NFS cannot be defined concurrently"
 		[ ! $DRY_RUN ] && exit 1;
 	fi
@@ -415,7 +415,7 @@ function locate_kdump_kernel()
 		# compare the two
 		if [ "$KDUMP_ADDR" != "$IOMEM_ADDR" ] ; then
 			log_failure_msg "kdump kernel relocation address does not match crashkernel parameter"
-	        [ ! $DRY_RUN ] && exit 1;
+			[ ! $DRY_RUN ] && exit 1;
 			return 1;
 		fi
 	fi
@@ -721,23 +721,23 @@ function kdump_save_core()
 
 	# dump the dmesg buffer
 	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
-            log_action_msg "running makedumpfile --dump-dmesg $vmcore_file $KDUMP_DMESGFILE"
-            makedumpfile --dump-dmesg $vmcore_file $KDUMP_DMESGFILE
-            ERROR=$?
-            if [ $ERROR -ne 0 ] ; then
-                log_failure_msg "$NAME: makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
-                logger -t $NAME "makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
-            fi
+		log_action_msg "running makedumpfile --dump-dmesg $vmcore_file $KDUMP_DMESGFILE"
+		makedumpfile --dump-dmesg $vmcore_file $KDUMP_DMESGFILE
+		ERROR=$?
+		if [ $ERROR -ne 0 ] ; then
+			log_failure_msg "$NAME: makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
+			logger -t $NAME "makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
+		fi
 
-	    # did we succeed?
-	    if [ $ERROR == 0 ]; then
-		log_success_msg "$NAME: saved dmesg content in $KDUMP_STAMPDIR"
-		logger -t $NAME "saved dmesg content in $KDUMP_STAMPDIR"
-		sync
-	    else
-		log_failure_msg "$NAME: failed to save dmesg content in $KDUMP_STAMPDIR"
-		logger -t $NAME "failed to save dmesg content in $KDUMP_STAMPDIR"
-	    fi
+		# did we succeed?
+		if [ $ERROR == 0 ]; then
+			log_success_msg "$NAME: saved dmesg content in $KDUMP_STAMPDIR"
+			logger -t $NAME "saved dmesg content in $KDUMP_STAMPDIR"
+			sync
+		else
+			log_failure_msg "$NAME: failed to save dmesg content in $KDUMP_STAMPDIR"
+			logger -t $NAME "failed to save dmesg content in $KDUMP_STAMPDIR"
+		fi
 	fi
 
 	# limit the number of dumps kept on the local machine
@@ -831,28 +831,28 @@ function kdump_save_core_to_ssh()
 	fi
 
 	# dump the dmesg buffer
-        if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
-	    log_action_msg "running makedumpfile --dump-dmesg $vmcore_file $KDUMP_TMPDMESG"
-	    makedumpfile --dump-dmesg $vmcore_file $KDUMP_TMPDMESG
-	    ERROR=$?
-	    if [ $ERROR -ne 0 ] ; then
-		    log_failure_msg "$NAME: makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
-		    logger -t $NAME "makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
-	    else
-		    scp -i $KDUMP_SSH_KEY $KDUMP_TMPDMESG $KDUMP_REMOTE_HOST:$KDUMP_DMESGFILE
-		    ERROR=$?
-	    fi
+	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
+		log_action_msg "running makedumpfile --dump-dmesg $vmcore_file $KDUMP_TMPDMESG"
+		makedumpfile --dump-dmesg $vmcore_file $KDUMP_TMPDMESG
+		ERROR=$?
+		if [ $ERROR -ne 0 ] ; then
+			log_failure_msg "$NAME: makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
+			logger -t $NAME "makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
+		else
+			scp -i $KDUMP_SSH_KEY $KDUMP_TMPDMESG $KDUMP_REMOTE_HOST:$KDUMP_DMESGFILE
+			ERROR=$?
+		fi
 
-	    # did we succeed?
-	    if [ $ERROR == 0 ]; then
-		    log_success_msg "$NAME: saved dmesg content in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
-		    logger -t $NAME "saved dmesg content in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
-		    return 0;
-	    else
-		    log_failure_msg "$NAME: failed to save dmesg content in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
-		    logger -t $NAME "failed to save dmesg content in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
-		    return 1;
-	    fi
+		# did we succeed?
+		if [ $ERROR == 0 ]; then
+			log_success_msg "$NAME: saved dmesg content in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
+			logger -t $NAME "saved dmesg content in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
+			return 0;
+		else
+			log_failure_msg "$NAME: failed to save dmesg content in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
+			logger -t $NAME "failed to save dmesg content in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
+			return 1;
+		fi
 	fi
 }
 
