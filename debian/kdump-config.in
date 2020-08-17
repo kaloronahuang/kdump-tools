@@ -343,8 +343,8 @@ function check_secure_boot()
 {
 	local sb_path sb sm
 
-	sb_path=$(find /sys/firmware/efi/efivars -name SecureBoot-* 2>/dev/null)
-	sm_path=$(find /sys/firmware/efi/efivars -name SetupMode-* 2>/dev/null)
+	sb_path=$(find /sys/firmware/efi/efivars -name 'SecureBoot-*' 2>/dev/null)
+	sm_path=$(find /sys/firmware/efi/efivars -name 'SetupMode-*' 2>/dev/null)
 
 	if [ -f "$sb_path" ] && [ -f "$sm_path" ]; then
 		sb=$(hexdump -v -e '/1 "%d\ "' $sb_path|cut -d' ' -f 5)
