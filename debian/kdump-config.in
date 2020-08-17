@@ -1007,7 +1007,7 @@ case "$1" in
 	exit 0;
 	;;
   savecore)
-	if ! [ -z $SSH ];then
+	if [ -n "$SSH" ];then
 		kdump_save_core_to_ssh
 	else
 		kdump_save_core
