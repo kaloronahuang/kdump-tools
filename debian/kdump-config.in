@@ -556,9 +556,7 @@ function kdump_load()
 
 	if [ $DRY_RUN ] ; then return 0; fi
 
-	eval $KEXEC_CMD
-
-	if [ $? == 0 ]; then
+	if eval $KEXEC_CMD; then
 		log_success_msg "loaded kdump kernel"
 		logger -t $NAME "$KEXEC_CMD"
 		logger -t $NAME "loaded kdump kernel"
@@ -582,6 +580,7 @@ function kdump_unload()
 		$KEXEC -p -u
 	fi
 
+	# shellcheck disable=SC2181
 	if [ $? == 0 ]; then
 		log_success_msg "unloaded kdump kernel"
 		logger -t $NAME "unloaded kdump kernel"
@@ -808,8 +807,8 @@ function kdump_save_core_to_ssh()
 		logger -t $NAME "makedumpfile failed, falling back to 'scp'"
 		KDUMP_CORETEMP="$KDUMP_STAMPDIR/vmcore-incomplete"
 		KDUMP_COREFILE="$KDUMP_STAMPDIR/vmcore.$KDUMP_STAMP"
-		scp -i $KDUMP_SSH_KEY $vmcore_file $KDUMP_REMOTE_HOST:$KDUMP_CORETEMP
-		if [ $? -ne 0 ];then
+
+		if ! scp -i $KDUMP_SSH_KEY $vmcore_file $KDUMP_REMOTE_HOST:$KDUMP_CORETEMP; then
 			log_failure_msg "$NAME: makedumpfile scp failed. The vmcore file will  not be available"
 			logger -t $NAME "makedumpfile scp failed. The vmcore file will  not be available"
 		else
@@ -901,8 +900,7 @@ function check_sysctl_change()
 {
 	kernel_version=$1
 
-	cmp -s "${KDUMP_SYSCTL_FILE}" "${KDUMP_DIR}/latest_sysctls-${kernel_version}"
-	if [ $? != 0 ]; then
+	if ! cmp -s "${KDUMP_SYSCTL_FILE}" "${KDUMP_DIR}/latest_sysctls-${kernel_version}"; then
 		rm -f "$KDUMP_DIR/initrd.img-${kernel_version}"
 	fi
 
