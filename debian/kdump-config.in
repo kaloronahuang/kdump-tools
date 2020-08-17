@@ -484,7 +484,7 @@ kernel_version=$1
 		exit 1
 	fi
 
-	if [ -e /boot/vmlinu[xz]-${kernel_version} ];then
+	if [ -e "/boot/vmlinux-${kernel_version}" ] || [ -e "/boot/vmlinuz-${kernel_version}" ]; then
 		create_symlink vmlinuz $kernel_version
 
 		if [ -f $KDUMP_DIR/initrd.img-${kernel_version} ]; then
