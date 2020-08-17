@@ -151,7 +151,7 @@ function kdump_show()
 		return 0
 	fi
 
-	if [ -e $sys_kexec_crash -a `cat $sys_kexec_crash` -eq 1 ] ; then
+	if [ -e $sys_kexec_crash ] && [ `cat $sys_kexec_crash` -eq 1 ] ; then
 		echo "current state:    ready to kdump";
 	else
 		echo "current state:    Not ready to kdump";
@@ -263,7 +263,7 @@ function manage_symlinks()
 # Returns: none. prints warnings or exit
 function check_fadump_support()
 {
-	if [ -z "$USE_KDUMP" -o "$USE_KDUMP" == "0" ] ; then
+	if [ -z "$USE_KDUMP" ] || [ "$USE_KDUMP" == "0" ] ; then
 		log_failure_msg "$KDUMP_DEFAULTS: USE_KDUMP is not set or zero"
 		[ ! $DRY_RUN ] && exit 1;
 	fi
@@ -288,7 +288,7 @@ function check_fadump_support()
 # Returns: none. prints warnings or exit
 function check_kdump_support()
 {
-	if [ -z "$USE_KDUMP" -o "$USE_KDUMP" == "0" ] ; then
+	if [ -z "$USE_KDUMP" ] || [ "$USE_KDUMP" == "0" ] ; then
 		log_failure_msg "$KDUMP_DEFAULTS: USE_KDUMP is not set or zero"
 		[ ! $DRY_RUN ] && exit 1;
 	fi
@@ -377,7 +377,7 @@ function locate_kdump_kernel()
 		if [ ! -e "$KDUMP_KERNEL" ] ; then
 			log_failure_msg "$KDUMP_DEFAULTS: KDUMP_KERNEL does not exist: $KDUMP_KERNEL"
 			[ ! $DRY_RUN ] && exit 1;
-		elif [ -n "$KDUMP_INITRD" -a ! -e "$KDUMP_INITRD" ] ; then
+		elif [ -n "$KDUMP_INITRD" ] && [ ! -e "$KDUMP_INITRD" ] ; then
 			log_failure_msg "$KDUMP_DEFAULTS: KDUMP_INITRD does not exist: $KDUMP_INITRD"
 			[ ! $DRY_RUN ] && exit 1;
 		fi
@@ -479,7 +479,7 @@ function kdump_create_symlinks()
 {
 kernel_version=$1
 
-	if [ -e $sys_kexec_crash -a `cat $sys_kexec_crash` -eq 1 ] ; then
+	if [ -e $sys_kexec_crash ] && [ `cat $sys_kexec_crash` -eq 1 ] ; then
 		log_failure_msg "Cannot change symbolic links when kdump is loaded"
 		exit 1
 	fi
@@ -741,7 +741,7 @@ function kdump_save_core()
 	fi
 
 	# limit the number of dumps kept on the local machine
-	if [ -z "${NFS}" -a $ERROR == 0 -a $KDUMP_NUM_DUMPS -gt 0 ] ; then
+	if [ -z "${NFS}" ] && [ $ERROR == 0 ] && [ $KDUMP_NUM_DUMPS -gt 0 ] ; then
 		num_dumps=$(ls -1dv $KDUMP_COREDIR/2* | wc -l)
 		if [ $num_dumps -gt $KDUMP_NUM_DUMPS ] ; then
 			purge_num=$((num_dumps - KDUMP_NUM_DUMPS))
@@ -947,7 +947,7 @@ condreload()
 		sys_loaded="$sys_fadump_registered"
 	fi
 	flock 9
-	if [ -e $sys_loaded -a `cat $sys_loaded` -eq 1 ] ; then
+	if [ -e $sys_loaded ] && [ `cat $sys_loaded` -eq 1 ] ; then
 		reload
 	fi
 }
