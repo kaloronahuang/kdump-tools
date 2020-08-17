@@ -341,7 +341,7 @@ function check_securelevel()
 
 function check_secure_boot()
 {
-	local sb_path sm_file sb sm
+	local sb_path sb sm
 
 	sb_path=$(find /sys/firmware/efi/efivars -name SecureBoot-* 2>/dev/null)
 	sm_path=$(find /sys/firmware/efi/efivars -name SetupMode-* 2>/dev/null)
