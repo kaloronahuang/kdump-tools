@@ -39,8 +39,8 @@ KDUMP_DEFAULTS=/etc/default/kdump-tools
 KEXEC=/sbin/kexec
 [ -e $KEXEC ] || exit 1;
 
-KVER=`uname -r`
-ARCH=`uname -m`
+KVER=$(uname -r)
+ARCH=$(uname -m)
 
 # Set up defaults
 KDUMP_SYSCTL_FILE="/etc/kdump/sysctl.conf"
@@ -57,7 +57,7 @@ KDUMP_CMDLINE_APPEND=${KDUMP_CMDLINE_APPEND:="@KDUMP_CMDLINE_APPEND@"}
 KDUMP_KERNEL_HOOK="/etc/kernel/postinst.d/kdump-tools"
 [ -d $KDUMP_COREDIR ] || mkdir -p $KDUMP_COREDIR ;
 
-IOMEM_ADDR=`grep -i "Crash kernel" /proc/iomem | sed "s/-..*//" | sed "s/^[ 0]*/0x/"`
+IOMEM_ADDR=$(grep -i "Crash kernel" /proc/iomem | sed "s/-..*//" | sed "s/^[ 0]*/0x/")
 
 # Constants
 vmcore_file=/proc/vmcore
@@ -296,7 +296,7 @@ function check_kdump_support()
 		log_failure_msg "kdump is not supported by this kernel"
 		[ ! $DRY_RUN ] && exit 1;
 	fi
-	CRASHKERNEL=`grep -i crashkernel= /proc/cmdline`;
+	CRASHKERNEL=$(grep -i crashkernel= /proc/cmdline);
 	if [ -z "$CRASHKERNEL" ] ; then
 		log_failure_msg "no crashkernel= parameter in the kernel cmdline"
 		[ ! $DRY_RUN ] && exit 1;
@@ -411,7 +411,7 @@ function locate_kdump_kernel()
 	if check_relocatable $KDUMP_CONFIG; then
 		KDUMP_ADDR="relocatable"
 	else
-		KDUMP_ADDR=`grep CONFIG_PHYSICAL_START $KDUMP_CONFIG | sed "s/CONFIG_PHYSICAL_START=//"`
+		KDUMP_ADDR=$(grep CONFIG_PHYSICAL_START $KDUMP_CONFIG | sed "s/CONFIG_PHYSICAL_START=//")
 		# compare the two
 		if [ "$KDUMP_ADDR" != "$IOMEM_ADDR" ] ; then
 			log_failure_msg "kdump kernel relocation address does not match crashkernel parameter"
@@ -440,10 +440,10 @@ function apply_panic_triggers()
 function fadump_register()
 {
 	# set fadump registered sys node to `1` to register fadump
-	if [ "`cat $sys_fadump_registered`" -ne 1 ]; then
+	if [ "$(cat $sys_fadump_registered)" -ne 1 ]; then
 		echo 1 > $sys_fadump_registered
 	fi
-	rc=`cat $sys_fadump_registered`
+	rc=$(cat $sys_fadump_registered)
 	if [ $rc -ne 1 ] ; then
 		log_failure_msg "fadump registering failed"
 		logger -t $NAME "fadump registering failed"
@@ -461,10 +461,10 @@ function fadump_register()
 function fadump_unregister()
 {
 	# set fadump registered sys node to `0` to un-register fadump
-	if [ "`cat $sys_fadump_registered`" -ne 0 ]; then
+	if [ "$(cat $sys_fadump_registered)" -ne 0 ]; then
 		echo 0 > $sys_fadump_registered
 	fi
-	rc=`cat $sys_fadump_registered`
+	rc=$(cat $sys_fadump_registered)
 	if [ $rc -ne 0 ] ; then
 		log_failure_msg "fadump un-registering failed"
 		logger -t $NAME "fadump un-registering failed"
@@ -523,7 +523,7 @@ function kdump_load()
 	# The only special case here is that x86, x86_64 elf style
 	# binaries require the --args-linux argument.
 	if [ "$ARCH" != "ia64" ] ; then
-		ELF_TST=`file $KDUMP_KERNEL | grep ELF`
+		ELF_TST=$(file $KDUMP_KERNEL | grep ELF)
 		if [ -n "$ELF_TST" ] ; then
 			KEXEC_CMD="$KEXEC_CMD --args-linux"
 		fi
@@ -536,7 +536,7 @@ function kdump_load()
 
 	# Assemble the --commmand-line:
 	if [ -z "$KDUMP_CMDLINE" ] ; then
-		KDUMP_CMDLINE=$(sed -r -e 's/(^| )(crashkernel|hugepages|hugepagesz|abm)=[^ ]*//g;s/"/\\\\"/' /proc/cmdline)
+		KDUMP_CMDLINE=$(sed -re 's/(^| )(crashkernel|hugepages|hugepagesz|abm)=[^ ]*//g;s/"/\\\\"/' /proc/cmdline)
 	fi
 	KDUMP_CMDLINE="$KDUMP_CMDLINE $KDUMP_CMDLINE_APPEND"
 	KEXEC_CMD="$KEXEC_CMD --command-line=\"$KDUMP_CMDLINE\""
@@ -637,7 +637,7 @@ function define_stampdir()
 # Sets: KDUMP_STAMPDIR, KDUMP_COREFILE
 function kdump_save_core()
 {
-	KDUMP_STAMP=`date +"%Y%m%d%H%M"`
+	KDUMP_STAMP=$(date +"%Y%m%d%H%M")
 	KDUMP_STAMPDIR=$(define_stampdir $KDUMP_STAMP)
 	KDUMP_CORETEMP="$KDUMP_STAMPDIR/dump-incomplete"
 	KDUMP_COREFILE="$KDUMP_STAMPDIR/dump.$KDUMP_STAMP"
@@ -765,7 +765,7 @@ function kdump_save_core_to_ssh()
 	KDUMP_SSH_KEY="${SSH_KEY:=/root/.ssh/kdump_id_rsa}"
 	KDUMP_REMOTE_HOST="$SSH"
 
-	KDUMP_STAMP=`date +"%Y%m%d%H%M"`
+	KDUMP_STAMP=$(date +"%Y%m%d%H%M")
 	KDUMP_STAMPDIR=$(define_stampdir $KDUMP_STAMP)
 
 	KDUMP_CORETEMP="$KDUMP_STAMPDIR/dump-incomplete"
