@@ -874,7 +874,7 @@ function kdump_propagate()
 		echo "Using existing key $KDUMP_SSH_KEY"
 	else
 		echo "Need to generate a new ssh key..."
-		/usr/bin/ssh-keygen -t rsa -f $KDUMP_SSH_KEY -N "" 2>&1 > /dev/null
+		/usr/bin/ssh-keygen -t rsa -f $KDUMP_SSH_KEY -N "" >/dev/null 2>&1
 	fi
 
 	KDUMP_SSH_USER=${KDUMP_REMOTE_HOST%@*}
