@@ -60,3 +60,8 @@ override_dh_auto_clean:
 	rm -f debian/kdump-tools.maintscript
 	rm -f debian/kdump-config debian/kdump-tools.conf debian/kdump-tools.5
 	dh_auto_clean
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	shellcheck -e SC1090,SC1091 $(shell find debian -maxdepth 1 -type f | xargs grep -l '^#! */bin/\(ba\)\?sh')
+endif
