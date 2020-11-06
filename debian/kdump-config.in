@@ -426,7 +426,7 @@ function locate_kdump_kernel()
 # Applies the panic_on_oops trigger on regular kernel
 function apply_panic_triggers()
 {
-	SYSCTL_BIN=$(which sysctl)
+	SYSCTL_BIN=$(command -v sysctl)
 	if [ -z "${SYSCTL_BIN}" ] || [ ! -x "${SYSCTL_BIN}" ]; then
 		log_warning_msg "kdump-config couldn't set panic trigger (sysctl binary not available)"
 		return 0 # prevents bad return carrying
@@ -740,14 +740,13 @@ function kdump_save_core()
 
 	# limit the number of dumps kept on the local machine
 	if [ -z "${NFS}" ] && [ $ERROR == 0 ] && [ $KDUMP_NUM_DUMPS -gt 0 ] ; then
-		num_dumps=$(ls -1dv $KDUMP_COREDIR/2* | wc -l)
+		num_dumps=$(find $KDUMP_COREDIR -mindepth 1 -maxdepth 1 -name '2*' | wc -l)
 		if [ "$num_dumps" -gt $KDUMP_NUM_DUMPS ] ; then
 			purge_num=$((num_dumps - KDUMP_NUM_DUMPS))
-			purge_dir=$(ls -1dv $KDUMP_COREDIR/2* | head -$purge_num | tr "\n" " ")
+			purge_dir=$(find $KDUMP_COREDIR -mindepth 1 -maxdepth 1 -name '2*' -print0 | sort -Vz | head -z -n $purge_num | tr "\0" " ")
 			log_action_msg "Too many dumps, purging: $purge_dir"
 			logger -t $NAME "Too many dumps, purging: $purge_dir"
-			# shellcheck disable=SC2086
-			rm -rf $purge_dir
+			find $KDUMP_COREDIR -mindepth 1 -maxdepth 1 -name '2*' -print0 | sort -Vz | head -z -n $purge_num | xargs -0 rm -rf
 		fi
 	fi
 
