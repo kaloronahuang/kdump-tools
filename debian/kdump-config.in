@@ -272,10 +272,6 @@ function check_fadump_support()
 		log_failure_msg "Try passing \"fadump=on\" to enable fadump"
 		[ ! "$DRY_RUN" ] && exit 1;
 	fi
-	if [ -n "$NFS" ] && [ -n "$SSH" ];then
-		log_failure_msg "\$SSH and \$NFS cannot be defined concurrently"
-		[ ! "$DRY_RUN" ] && exit 1;
-	fi
 }
 
 # check_kdump_support:  Other miscellaneous checks go here:
@@ -299,10 +295,6 @@ function check_kdump_support()
 	CRASHKERNEL=$(grep -i crashkernel= /proc/cmdline);
 	if [ -z "$CRASHKERNEL" ] ; then
 		log_failure_msg "no crashkernel= parameter in the kernel cmdline"
-		[ ! "$DRY_RUN" ] && exit 1;
-	fi
-	if [ -n "$NFS" ] && [ -n "$SSH" ];then
-		log_failure_msg "\$SSH and \$NFS cannot be defined concurrently"
 		[ ! "$DRY_RUN" ] && exit 1;
 	fi
 }
@@ -1007,7 +999,8 @@ case "$1" in
   savecore)
 	if [ -n "$SSH" ];then
 		kdump_save_core_to_ssh
-	else
+	fi
+	if [ -n "$NFS" ] || [ -z "$SSH" ]; then
 		kdump_save_core
 	fi
 	exit $?
