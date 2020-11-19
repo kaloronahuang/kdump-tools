@@ -796,11 +796,12 @@ kdump_save_core_to_ftp()
 		FTPPUT_ARGS="$FTPPUT_ARGS -P $FTP_PORT"
 	fi
 
-	# Add '-F' [flatten] to MAKEDUMP_ARGS, if not there:
-	[ "${MAKEDUMP_ARGS#-F*}" != "${MAKEDUMP_ARGS}" ] || MAKEDUMP_ARGS="${MAKEDUMP_ARGS} -F"
-	log_action_msg "sending makedumpfile $MAKEDUMP_ARGS $vmcore_file via FTP to $KDUMP_REMOTE_HOST:$KDUMP_COREFILE"
+	FTP_MAKEDUMP_ARGS="${MAKEDUMP_ARGS}"
+	# Add '-F' [flatten] to FTP_MAKEDUMP_ARGS, if not there:
+	[ "${FTP_MAKEDUMP_ARGS#-F*}" != "${FTP_MAKEDUMP_ARGS}" ] || FTP_MAKEDUMP_ARGS="${FTP_MAKEDUMP_ARGS} -F"
+	log_action_msg "sending makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file via FTP to $KDUMP_REMOTE_HOST:$KDUMP_COREFILE"
 	# shellcheck disable=SC2086
-	makedumpfile $MAKEDUMP_ARGS $vmcore_file | busybox ftpput $FTPPUT_ARGS "$KDUMP_REMOTE_HOST" "$KDUMP_COREFILE" -
+	makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file | busybox ftpput $FTPPUT_ARGS "$KDUMP_REMOTE_HOST" "$KDUMP_COREFILE" -
 	ERROR=$?
 
 	# did we succeed?
@@ -871,11 +872,12 @@ function kdump_save_core_to_ssh()
 		return 1
 	fi
 
+	SSH_MAKEDUMP_ARGS="${MAKEDUMP_ARGS}"
 	# Add '-F' [flatten] to MAKEDUMP_ARGS, if not there:
-	[ "${MAKEDUMP_ARGS#-F*}" != "${MAKEDUMP_ARGS}" ] || MAKEDUMP_ARGS="${MAKEDUMP_ARGS} -F"
-	log_action_msg "sending makedumpfile $MAKEDUMP_ARGS $vmcore_file to $KDUMP_REMOTE_HOST : $KDUMP_CORETEMP"
+	[ "${SSH_MAKEDUMP_ARGS#-F*}" != "${SSH_MAKEDUMP_ARGS}" ] || SSH_MAKEDUMP_ARGS="${SSH_MAKEDUMP_ARGS} -F"
+	log_action_msg "sending makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file to $KDUMP_REMOTE_HOST : $KDUMP_CORETEMP"
 	# shellcheck disable=SC2086
-	makedumpfile $MAKEDUMP_ARGS $vmcore_file | ssh -i $KDUMP_SSH_KEY "$KDUMP_REMOTE_HOST" dd "of=$KDUMP_CORETEMP"
+	makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file | ssh -i $KDUMP_SSH_KEY "$KDUMP_REMOTE_HOST" dd "of=$KDUMP_CORETEMP"
 	ERROR=$?
 	if [ $ERROR -ne 0 ] ; then
 		log_failure_msg "$NAME: makedumpfile failed, falling back to 'scp'"
