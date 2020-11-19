@@ -599,12 +599,13 @@ function kdump_unload()
 function define_stampdir()
 {
 	STAMP=$1
+	COREDIR="$2"
 	HOSTTAG="${HOSTTAG:=ip}"
 
 	if [ -z "$SSH" ] && [ -z "$NFS" ] && [ -z "$FTP" ]; then
-		echo "$KDUMP_COREDIR/$STAMP"
+		echo "$COREDIR/$STAMP"
 	elif [ "$HOSTTAG" = "hostname" ];then
-		echo "$KDUMP_COREDIR/$(hostname)-$STAMP"
+		echo "$COREDIR/$(hostname)-$STAMP"
 	else
 		# Looping to give time to network to settle
 		typeset -i counter=0
@@ -627,7 +628,7 @@ function define_stampdir()
 			log_action_msg "Reverting to HOSTTAG=hostname" >&2
 			THIS_HOST="$(hostname)"
 		fi
-		echo "$KDUMP_COREDIR/$THIS_HOST-$STAMP"
+		echo "$COREDIR/$THIS_HOST-$STAMP"
 	fi
 }
 
@@ -644,7 +645,7 @@ function define_stampdir()
 function kdump_save_core()
 {
 	KDUMP_STAMP=$(date +"%Y%m%d%H%M")
-	KDUMP_STAMPDIR=$(define_stampdir "$KDUMP_STAMP")
+	KDUMP_STAMPDIR=$(define_stampdir "$KDUMP_STAMP" "$KDUMP_COREDIR")
 	KDUMP_CORETEMP="$KDUMP_STAMPDIR/dump-incomplete"
 	KDUMP_COREFILE="$KDUMP_STAMPDIR/dump.$KDUMP_STAMP"
 	KDUMP_DMESGFILE="$KDUMP_STAMPDIR/dmesg.$KDUMP_STAMP"
@@ -778,7 +779,7 @@ kdump_save_core_to_ftp()
 	fi
 
 	FTP_STAMP=$(date +"%Y%m%d%H%M")
-	FTP_STAMPDIR=$(define_stampdir "")
+	FTP_STAMPDIR=$(define_stampdir "" "${FTP_COREDIR}")
 
 	FTP_COREFILE="${FTP_STAMPDIR}dump.$FTP_STAMP"
 	FTP_TMPDMESG="/tmp/dmesg.ftp.$FTP_STAMP"
@@ -846,7 +847,7 @@ function kdump_save_core_to_ssh()
 	SSH_REMOTE_HOST="$SSH"
 
 	SSH_STAMP=$(date +"%Y%m%d%H%M")
-	SSH_STAMPDIR=$(define_stampdir "$SSH_STAMP")
+	SSH_STAMPDIR=$(define_stampdir "$SSH_STAMP" "$KDUMP_COREDIR")
 
 	SSH_CORETEMP="$SSH_STAMPDIR/dump-incomplete"
 	SSH_COREFILE="$SSH_STAMPDIR/dump.$SSH_STAMP"
