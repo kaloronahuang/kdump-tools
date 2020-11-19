@@ -781,7 +781,7 @@ kdump_save_core_to_ftp()
 	KDUMP_STAMPDIR=$(define_stampdir "")
 
 	KDUMP_COREFILE="${KDUMP_STAMPDIR}dump.$KDUMP_STAMP"
-	KDUMP_TMPDMESG="/tmp/dmesg.$KDUMP_STAMP"
+	KDUMP_TMPDMESG="/tmp/dmesg.ftp.$KDUMP_STAMP"
 	KDUMP_DMESGFILE="${KDUMP_STAMPDIR}dmesg.$KDUMP_STAMP"
 	ERROR=0
 
@@ -850,7 +850,7 @@ function kdump_save_core_to_ssh()
 
 	KDUMP_CORETEMP="$KDUMP_STAMPDIR/dump-incomplete"
 	KDUMP_COREFILE="$KDUMP_STAMPDIR/dump.$KDUMP_STAMP"
-	KDUMP_TMPDMESG="/tmp/dmesg.$KDUMP_STAMP"
+	KDUMP_TMPDMESG="/tmp/dmesg.ssh.$KDUMP_STAMP"
 	KDUMP_DMESGFILE="$KDUMP_STAMPDIR/dmesg.$KDUMP_STAMP"
 
 	CNT=${SSH_KDUMP_RETRY}
