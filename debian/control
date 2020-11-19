@@ -32,7 +32,7 @@ Description: VMcore extraction tool
 Package: kdump-tools
 Architecture: amd64 arm64 armel armhf i386 ia64 powerpc ppc64el s390x x32
 Pre-Depends: ${misc:Pre-Depends}
-Depends: bsdmainutils,
+Depends: bsdextrautils | bsdmainutils,
          busybox | busybox-static,
          debconf,
          file,
