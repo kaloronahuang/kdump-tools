@@ -770,19 +770,19 @@ function kdump_save_core()
 
 kdump_save_core_to_ftp()
 {
-	KDUMP_REMOTE_HOST="${FTP%%:*}"
-	KDUMP_COREDIR="${FTP#*:}"
-	if [ "$KDUMP_COREDIR" = "$FTP" ]; then
+	FTP_REMOTE_HOST="${FTP%%:*}"
+	FTP_COREDIR="${FTP#*:}"
+	if [ "$FTP_COREDIR" = "$FTP" ]; then
 		# No colon in FTP specified. Use / as path
-		KDUMP_COREDIR="/"
+		FTP_COREDIR="/"
 	fi
 
-	KDUMP_STAMP=$(date +"%Y%m%d%H%M")
-	KDUMP_STAMPDIR=$(define_stampdir "")
+	FTP_STAMP=$(date +"%Y%m%d%H%M")
+	FTP_STAMPDIR=$(define_stampdir "")
 
-	KDUMP_COREFILE="${KDUMP_STAMPDIR}dump.$KDUMP_STAMP"
-	KDUMP_TMPDMESG="/tmp/dmesg.ftp.$KDUMP_STAMP"
-	KDUMP_DMESGFILE="${KDUMP_STAMPDIR}dmesg.$KDUMP_STAMP"
+	FTP_COREFILE="${FTP_STAMPDIR}dump.$FTP_STAMP"
+	FTP_TMPDMESG="/tmp/dmesg.ftp.$FTP_STAMP"
+	FTP_DMESGFILE="${FTP_STAMPDIR}dmesg.$FTP_STAMP"
 	ERROR=0
 
 	FTPPUT_ARGS=""
@@ -799,9 +799,9 @@ kdump_save_core_to_ftp()
 	FTP_MAKEDUMP_ARGS="${MAKEDUMP_ARGS}"
 	# Add '-F' [flatten] to FTP_MAKEDUMP_ARGS, if not there:
 	[ "${FTP_MAKEDUMP_ARGS#-F*}" != "${FTP_MAKEDUMP_ARGS}" ] || FTP_MAKEDUMP_ARGS="${FTP_MAKEDUMP_ARGS} -F"
-	log_action_msg "sending makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file via FTP to $KDUMP_REMOTE_HOST:$KDUMP_COREFILE"
+	log_action_msg "sending makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file via FTP to $FTP_REMOTE_HOST:$FTP_COREFILE"
 	# shellcheck disable=SC2086
-	makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file | busybox ftpput $FTPPUT_ARGS "$KDUMP_REMOTE_HOST" "$KDUMP_COREFILE" -
+	makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file | busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_COREFILE" -
 	ERROR=$?
 
 	# did we succeed?
@@ -815,25 +815,25 @@ kdump_save_core_to_ftp()
 
 	# dump the dmesg buffer
 	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
-		log_action_msg "running makedumpfile --dump-dmesg $vmcore_file $KDUMP_TMPDMESG"
-		makedumpfile --dump-dmesg $vmcore_file "$KDUMP_TMPDMESG"
+		log_action_msg "running makedumpfile --dump-dmesg $vmcore_file $FTP_TMPDMESG"
+		makedumpfile --dump-dmesg $vmcore_file "$FTP_TMPDMESG"
 		ERROR=$?
 		if [ $ERROR -ne 0 ] ; then
 			log_failure_msg "$NAME: makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
 			logger -t $NAME "makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
 		else
 			# shellcheck disable=SC2086
-			busybox ftpput $FTPPUT_ARGS "$KDUMP_REMOTE_HOST" "$KDUMP_DMESGFILE" "$KDUMP_TMPDMESG"
+			busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_DMESGFILE" "$FTP_TMPDMESG"
 			ERROR=$?
 		fi
 
 		# did we succeed?
 		if [ $ERROR -eq 0 ]; then
-			log_success_msg "$NAME: saved dmesg content via FTP in $KDUMP_REMOTE_HOST:$KDUMP_DMESGFILE"
-			logger -t $NAME "saved dmesg content via FTP in $KDUMP_REMOTE_HOST:$KDUMP_DMESGFILE"
+			log_success_msg "$NAME: saved dmesg content via FTP in $FTP_REMOTE_HOST:$FTP_DMESGFILE"
+			logger -t $NAME "saved dmesg content via FTP in $FTP_REMOTE_HOST:$FTP_DMESGFILE"
 		else
-			log_failure_msg "$NAME: failed to save dmesg content via FTP in $KDUMP_REMOTE_HOST:$KDUMP_DMESGFILE"
-			logger -t $NAME "failed to save dmesg content via FTP in $KDUMP_REMOTE_HOST:$KDUMP_DMESGFILE"
+			log_failure_msg "$NAME: failed to save dmesg content via FTP in $FTP_REMOTE_HOST:$FTP_DMESGFILE"
+			logger -t $NAME "failed to save dmesg content via FTP in $FTP_REMOTE_HOST:$FTP_DMESGFILE"
 		fi
 	fi
 
@@ -842,20 +842,20 @@ kdump_save_core_to_ftp()
 
 function kdump_save_core_to_ssh()
 {
-	KDUMP_SSH_KEY="${SSH_KEY:=/root/.ssh/kdump_id_rsa}"
-	KDUMP_REMOTE_HOST="$SSH"
+	SSH_KEY="${SSH_KEY:=/root/.ssh/kdump_id_rsa}"
+	SSH_REMOTE_HOST="$SSH"
 
-	KDUMP_STAMP=$(date +"%Y%m%d%H%M")
-	KDUMP_STAMPDIR=$(define_stampdir "$KDUMP_STAMP")
+	SSH_STAMP=$(date +"%Y%m%d%H%M")
+	SSH_STAMPDIR=$(define_stampdir "$SSH_STAMP")
 
-	KDUMP_CORETEMP="$KDUMP_STAMPDIR/dump-incomplete"
-	KDUMP_COREFILE="$KDUMP_STAMPDIR/dump.$KDUMP_STAMP"
-	KDUMP_TMPDMESG="/tmp/dmesg.ssh.$KDUMP_STAMP"
-	KDUMP_DMESGFILE="$KDUMP_STAMPDIR/dmesg.$KDUMP_STAMP"
+	SSH_CORETEMP="$SSH_STAMPDIR/dump-incomplete"
+	SSH_COREFILE="$SSH_STAMPDIR/dump.$SSH_STAMP"
+	SSH_TMPDMESG="/tmp/dmesg.ssh.$SSH_STAMP"
+	SSH_DMESGFILE="$SSH_STAMPDIR/dmesg.$SSH_STAMP"
 
 	CNT=${SSH_KDUMP_RETRY}
 	while [ $CNT -ne 0 ];do
-		ssh -i $KDUMP_SSH_KEY "$KDUMP_REMOTE_HOST" mkdir -p "$KDUMP_STAMPDIR"
+		ssh -i $SSH_KEY "$SSH_REMOTE_HOST" mkdir -p "$SSH_STAMPDIR"
 		ERROR=$?
 		if [ $ERROR -eq 0 ];then
 			CNT=0
@@ -867,25 +867,25 @@ function kdump_save_core_to_ssh()
 	done
 
 	if [ $ERROR -ne 0 ]; then
-		log_failure_msg "$NAME: Unable to reach remote server $KDUMP_REMOTE_HOST; can't continue"
-		logger -t $NAME "Unable to reach remote server $KDUMP_REMOTE_HOST; can't continue"
+		log_failure_msg "$NAME: Unable to reach remote server $SSH_REMOTE_HOST; can't continue"
+		logger -t $NAME "Unable to reach remote server $SSH_REMOTE_HOST; can't continue"
 		return 1
 	fi
 
 	SSH_MAKEDUMP_ARGS="${MAKEDUMP_ARGS}"
 	# Add '-F' [flatten] to MAKEDUMP_ARGS, if not there:
 	[ "${SSH_MAKEDUMP_ARGS#-F*}" != "${SSH_MAKEDUMP_ARGS}" ] || SSH_MAKEDUMP_ARGS="${SSH_MAKEDUMP_ARGS} -F"
-	log_action_msg "sending makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file to $KDUMP_REMOTE_HOST : $KDUMP_CORETEMP"
+	log_action_msg "sending makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file to $SSH_REMOTE_HOST : $SSH_CORETEMP"
 	# shellcheck disable=SC2086
-	makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file | ssh -i $KDUMP_SSH_KEY "$KDUMP_REMOTE_HOST" dd "of=$KDUMP_CORETEMP"
+	makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file | ssh -i $SSH_KEY "$SSH_REMOTE_HOST" dd "of=$SSH_CORETEMP"
 	ERROR=$?
 	if [ $ERROR -ne 0 ] ; then
 		log_failure_msg "$NAME: makedumpfile failed, falling back to 'scp'"
 		logger -t $NAME "makedumpfile failed, falling back to 'scp'"
-		KDUMP_CORETEMP="$KDUMP_STAMPDIR/vmcore-incomplete"
-		KDUMP_COREFILE="$KDUMP_STAMPDIR/vmcore.$KDUMP_STAMP"
+		SSH_CORETEMP="$SSH_STAMPDIR/vmcore-incomplete"
+		SSH_COREFILE="$SSH_STAMPDIR/vmcore.$SSH_STAMP"
 
-		if ! scp -i $KDUMP_SSH_KEY $vmcore_file "$KDUMP_REMOTE_HOST:$KDUMP_CORETEMP"; then
+		if ! scp -i $SSH_KEY $vmcore_file "$SSH_REMOTE_HOST:$SSH_CORETEMP"; then
 			log_failure_msg "$NAME: makedumpfile scp failed. The vmcore file will  not be available"
 			logger -t $NAME "makedumpfile scp failed. The vmcore file will  not be available"
 		else
@@ -897,36 +897,36 @@ function kdump_save_core_to_ssh()
 
 	# did we succeed?
 	if [ $ERROR -ne 0 ]; then
-		log_failure_msg "$NAME: failed to save vmcore in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
-		logger -t $NAME "failed to save vmcore in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
+		log_failure_msg "$NAME: failed to save vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
+		logger -t $NAME "failed to save vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
 		sync
 	else
-		ssh -i $KDUMP_SSH_KEY "$KDUMP_REMOTE_HOST" mv "$KDUMP_CORETEMP" "$KDUMP_COREFILE"
-		log_success_msg "$NAME: saved vmcore in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
-		logger -t $NAME "saved vmcore in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
+		ssh -i $SSH_KEY "$SSH_REMOTE_HOST" mv "$SSH_CORETEMP" "$SSH_COREFILE"
+		log_success_msg "$NAME: saved vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
+		logger -t $NAME "saved vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
 	fi
 
 	# dump the dmesg buffer
 	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
 		log_action_msg "running makedumpfile --dump-dmesg $vmcore_file $KDUMP_TMPDMESG"
-		makedumpfile --dump-dmesg $vmcore_file "$KDUMP_TMPDMESG"
+		makedumpfile --dump-dmesg $vmcore_file "$SSH_TMPDMESG"
 		ERROR=$?
 		if [ $ERROR -ne 0 ] ; then
 			log_failure_msg "$NAME: makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
 			logger -t $NAME "makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
 		else
-			scp -i $KDUMP_SSH_KEY "$KDUMP_TMPDMESG" "$KDUMP_REMOTE_HOST:$KDUMP_DMESGFILE"
+			scp -i $SSH_KEY "$SSH_TMPDMESG" "$SSH_REMOTE_HOST:$SSH_DMESGFILE"
 			ERROR=$?
 		fi
 
 		# did we succeed?
 		if [ $ERROR == 0 ]; then
-			log_success_msg "$NAME: saved dmesg content in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
-			logger -t $NAME "saved dmesg content in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
+			log_success_msg "$NAME: saved dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
+			logger -t $NAME "saved dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
 			return 0;
 		else
-			log_failure_msg "$NAME: failed to save dmesg content in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
-			logger -t $NAME "failed to save dmesg content in $KDUMP_REMOTE_HOST:$KDUMP_STAMPDIR"
+			log_failure_msg "$NAME: failed to save dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
+			logger -t $NAME "failed to save dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
 			return 1;
 		fi
 	fi
