@@ -1,4 +1,4 @@
-makedumpfile (1:1.6.7-5) UNRELEASED; urgency=medium
+makedumpfile (1:1.6.8-1) UNRELEASED; urgency=medium
 
   [ Benjamin Drung ]
   * Add Homepage field pointing to GitHub page
@@ -14,8 +14,9 @@ makedumpfile (1:1.6.7-5) UNRELEASED; urgency=medium
 
   [ dann frazier ]
   * Support dumping kernel via both SSH and NFS
+  * Update to new upstream version 1.6.8.
 
- -- dann frazier <dannf@debian.org>  Mon, 30 Nov 2020 08:54:36 -0700
+ -- dann frazier <dannf@debian.org>  Tue, 01 Dec 2020 08:33:11 -0700
 
 makedumpfile (1:1.6.7-4) unstable; urgency=medium
 
