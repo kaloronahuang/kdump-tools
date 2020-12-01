@@ -1,7 +1,6 @@
 #!/usr/bin/make -f
 
-include /usr/share/dpkg/architecture.mk
-include /usr/share/dpkg/vendor.mk
+include /usr/share/dpkg/default.mk
 
 ifeq ($(shell $(call dpkg_vendor_derives_from,Ubuntu)),yes)
 	SUBSTVARS = -Vdist:Depends="kexec-tools (>= 1:2.0.10-2)"
