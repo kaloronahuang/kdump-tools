@@ -23,9 +23,6 @@ endif
 override_dh_gencontrol:
 	dh_gencontrol -- $(SUBSTVARS)
 
-override_dh_auto_build:
-	dh_auto_build -- LINKTYPE=dynamic USELZO=on
-
 kdump_cmdline_insert = sed "s/@KDUMP_CMDLINE_APPEND@/$(KDUMP_CMDLINE_APPEND)/" < $< > $@
 debian/kdump-config: debian/kdump-config.in
 	$(kdump_cmdline_insert)

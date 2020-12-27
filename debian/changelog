@@ -1,3 +1,9 @@
+kdump-tools (1:1.6.8.1) UNRELEASED; urgency=medium
+
+  * Split kdump-tools into its own source package.
+
+ -- dann frazier <dannf@debian.org>  Sun, 27 Dec 2020 09:47:53 -0700
+
 makedumpfile (1:1.6.8-2) unstable; urgency=medium
 
   * systemd: Use journal for StandardOutput instead of syslog, which
