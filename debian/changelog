@@ -1,6 +1,8 @@
 kdump-tools (1:1.6.8.1) UNRELEASED; urgency=medium
 
   * Split kdump-tools into its own source package.
+  * Change maintainer to Debian Kdump team. Thanks to Louis Bouchard for
+    all of his years of work maintaining this package!
 
  -- dann frazier <dannf@debian.org>  Sun, 27 Dec 2020 09:47:53 -0700
 
