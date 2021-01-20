@@ -1,6 +1,8 @@
 kdump-tools (1:1.6.8.2) UNRELEASED; urgency=medium
 
   * debian/control: Add Vcs-* tags.
+  * Support compressing the core file at dump time (Closes: #856960).
+    Thanks to Benjamin Drung!
 
  -- dann frazier <dannf@debian.org>  Mon, 18 Jan 2021 08:13:37 -0700
 
