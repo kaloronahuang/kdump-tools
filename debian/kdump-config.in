@@ -879,10 +879,9 @@ kdump_save_core_to_ftp()
 		FTPPUT_ARGS="$FTPPUT_ARGS -P $FTP_PORT"
 	fi
 
-	FTP_MAKEDUMP_ARGS="${MAKEDUMP_ARGS}"
-	log_action_msg "sending makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file via FTP to $FTP_REMOTE_HOST:$FTP_COREFILE"
+	log_action_msg "sending makedumpfile $MAKEDUMP_ARGS $vmcore_file via FTP to $FTP_REMOTE_HOST:$FTP_COREFILE"
 	# shellcheck disable=SC2086
-	makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file | compress | busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_COREFILE" -
+	makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress | busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_COREFILE" -
 	ERROR=$?
 
 	# did we succeed?
@@ -953,10 +952,9 @@ kdump_save_core_to_ssh()
 		return 1
 	fi
 
-	SSH_MAKEDUMP_ARGS="${MAKEDUMP_ARGS}"
-	log_action_msg "sending makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file to $SSH_REMOTE_HOST : $SSH_CORETEMP"
+	log_action_msg "sending makedumpfile $MAKEDUMP_ARGS $vmcore_file to $SSH_REMOTE_HOST : $SSH_CORETEMP"
 	# shellcheck disable=SC2086
-	makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file | compress | ssh -i $SSH_KEY "$SSH_REMOTE_HOST" dd "of=$SSH_CORETEMP"
+	makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress | ssh -i $SSH_KEY "$SSH_REMOTE_HOST" dd "of=$SSH_CORETEMP"
 	ERROR=$?
 	if [ $ERROR -ne 0 ] ; then
 		log_failure_msg "$NAME: makedumpfile failed, falling back to 'scp'"
