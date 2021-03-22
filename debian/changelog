@@ -1,3 +1,10 @@
+kdump-tools (1:1.6.8.3) UNRELEASED; urgency=medium
+
+  * kdump-config: Fix storage of local/NFS dump files
+    (Closes: #985716) (LP: #1920759).
+
+ -- dann frazier <dannf@debian.org>  Mon, 22 Mar 2021 10:53:57 -0600
+
 kdump-tools (1:1.6.8.2) unstable; urgency=medium
 
   * debian/control: Add Vcs-* tags.
