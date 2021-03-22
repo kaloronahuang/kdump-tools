@@ -53,7 +53,10 @@ NFS_TIMEO=${NFS_TIMEO:=600}
 NFS_RETRANS=${NFS_RETRANS:=3}
 NFS_MOUNT_RETRY=${NFS_MOUNT_RETRY:=4}
 SSH_KDUMP_RETRY=${SSH_KDUMP_RETRY:=16}
-MAKEDUMP_ARGS=${MAKEDUMP_ARGS:="-c -d 31"}
+MAKEDUMP_ARGS=${MAKEDUMP_ARGS:="-F -c -d 31"}
+# Add '-F' [flatten] to MAKEDUMP_ARGS, if not there:
+[ "${MAKEDUMP_ARGS#-F*}" != "${MAKEDUMP_ARGS}" ] || MAKEDUMP_ARGS="${MAKEDUMP_ARGS} -F"
+
 KDUMP_CMDLINE_APPEND=${KDUMP_CMDLINE_APPEND:="@KDUMP_CMDLINE_APPEND@"}
 KDUMP_KERNEL_HOOK="/etc/kernel/postinst.d/kdump-tools"
 [ -d $KDUMP_COREDIR ] || mkdir -p $KDUMP_COREDIR ;
@@ -877,8 +880,6 @@ kdump_save_core_to_ftp()
 	fi
 
 	FTP_MAKEDUMP_ARGS="${MAKEDUMP_ARGS}"
-	# Add '-F' [flatten] to FTP_MAKEDUMP_ARGS, if not there:
-	[ "${FTP_MAKEDUMP_ARGS#-F*}" != "${FTP_MAKEDUMP_ARGS}" ] || FTP_MAKEDUMP_ARGS="${FTP_MAKEDUMP_ARGS} -F"
 	log_action_msg "sending makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file via FTP to $FTP_REMOTE_HOST:$FTP_COREFILE"
 	# shellcheck disable=SC2086
 	makedumpfile $FTP_MAKEDUMP_ARGS $vmcore_file | compress | busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_COREFILE" -
@@ -953,8 +954,6 @@ kdump_save_core_to_ssh()
 	fi
 
 	SSH_MAKEDUMP_ARGS="${MAKEDUMP_ARGS}"
-	# Add '-F' [flatten] to MAKEDUMP_ARGS, if not there:
-	[ "${SSH_MAKEDUMP_ARGS#-F*}" != "${SSH_MAKEDUMP_ARGS}" ] || SSH_MAKEDUMP_ARGS="${SSH_MAKEDUMP_ARGS} -F"
 	log_action_msg "sending makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file to $SSH_REMOTE_HOST : $SSH_CORETEMP"
 	# shellcheck disable=SC2086
 	makedumpfile $SSH_MAKEDUMP_ARGS $vmcore_file | compress | ssh -i $SSH_KEY "$SSH_REMOTE_HOST" dd "of=$SSH_CORETEMP"
