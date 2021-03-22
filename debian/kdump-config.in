@@ -780,7 +780,7 @@ kdump_save_core()
 		mkdir -p "$KDUMP_STAMPDIR"
 	fi
 
-	log_action_msg "running makedumpfile $MAKEDUMP_ARGS $vmcore_file $KDUMP_CORETEMP"
+	log_action_msg "running makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress > $KDUMP_CORETEMP"
 	# shellcheck disable=SC2086
 	makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress > "$KDUMP_CORETEMP"
 	ERROR=$?
