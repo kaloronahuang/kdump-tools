@@ -830,7 +830,7 @@ kdump_save_core()
 		num_dumps=$(find $KDUMP_COREDIR -mindepth 1 -maxdepth 1 -name '2*' | wc -l)
 		if [ "$num_dumps" -gt $KDUMP_NUM_DUMPS ] ; then
 			purge_num=$((num_dumps - KDUMP_NUM_DUMPS))
-			purge_dir=$(find $KDUMP_COREDIR -mindepth 1 -maxdepth 1 -name '2*' -print0 | sort -Vz | head -z -n $purge_num | tr "\0" " ")
+			purge_dir=$(find $KDUMP_COREDIR -mindepth 1 -maxdepth 1 -name '2*' -print0 | sort -Vz | head -z -n $purge_num | tr "\\0" " ")
 			log_action_msg "Too many dumps, purging: $purge_dir"
 			logger -t $NAME "Too many dumps, purging: $purge_dir"
 			find $KDUMP_COREDIR -mindepth 1 -maxdepth 1 -name '2*' -print0 | sort -Vz | head -z -n $purge_num | xargs -0 rm -rf
