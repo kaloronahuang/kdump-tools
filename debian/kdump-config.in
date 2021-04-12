@@ -211,8 +211,8 @@ kdump_test()
 #
 check_symlink()
 {
-symlink=$1
-kern_version=$2
+	symlink=$1
+	kern_version=$2
 
 	if [ -h "$KDUMP_DIR/$symlink" ];then
 		linkedfile=$(file "$KDUMP_DIR/$symlink" | rev | cut -d" " -f1 | rev)
@@ -487,7 +487,7 @@ fadump_unregister()
 
 kdump_create_symlinks()
 {
-kernel_version=$1
+	kernel_version=$1
 
 	if [ -e $sys_kexec_crash ] && [ "$(cat $sys_kexec_crash)" -eq 1 ] ; then
 		log_failure_msg "Cannot change symbolic links when kdump is loaded"
