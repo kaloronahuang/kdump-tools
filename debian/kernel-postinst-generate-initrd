@@ -34,6 +34,11 @@ if test ! -e /etc/initramfs-tools/initramfs.conf; then
 	exit 2
 fi
 . /etc/initramfs-tools/initramfs.conf
+for conf_file in /etc/initramfs-tools/conf.d/*; do
+	if test -f "$conf_file" && basename "$conf_file" | grep '^[[:alnum:]][[:alnum:]\._-]*$' | grep -qv '\.dpkg-.*$'; then
+		. "$conf_file"
+	fi
+done
 
 if test "${MODULES-most}" = most; then
 	# Switch from "most" to "dep" to reduce the size of the initramfs.
@@ -57,7 +62,8 @@ cp -pr /etc/initramfs-tools "$kdumpdir"
 initramfsdir="$kdumpdir/initramfs-tools"
 
 if test -n "${KDUMP_MODULES-}" -a "${KDUMP_MODULES-}" != "${MODULES}"; then
-	sed -ie "s/MODULES=.*/MODULES=${KDUMP_MODULES}/" "$initramfsdir/initramfs.conf"
+	mkdir -p "$initramfsdir/conf.d"
+	echo "MODULES=${KDUMP_MODULES}" > "$initramfsdir/conf.d/zzz-kdump"
 fi
 
 # Add scsi_dh_* modules if in use otherwise
