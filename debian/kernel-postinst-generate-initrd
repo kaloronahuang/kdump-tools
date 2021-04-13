@@ -29,6 +29,18 @@ if [ -n "${DEB_MAINT_PARAMS-}" ]; then
 	fi
 fi
 
+if test ! -e /etc/initramfs-tools/initramfs.conf; then
+	echo "W: kdump-tools: /etc/initramfs-tools/initramfs.conf is missing." >&2
+	exit 2
+fi
+. /etc/initramfs-tools/initramfs.conf
+
+if test "${MODULES-most}" = most; then
+	# Switch from "most" to "dep" to reduce the size of the initramfs.
+	# "netboot" and "list" are expected to be already small enough.
+	KDUMP_MODULES=dep
+fi
+
 # We need a modified copy of initramfs-tools directory
 # with MODULES=dep in initramfs.conf
 if [ ! -d "$kdumpdir" ];then
@@ -44,18 +56,16 @@ cp -pr /etc/initramfs-tools "$kdumpdir"
 
 initramfsdir="$kdumpdir/initramfs-tools"
 
+if test -n "${KDUMP_MODULES-}" -a "${KDUMP_MODULES-}" != "${MODULES}"; then
+	sed -ie "s/MODULES=.*/MODULES=${KDUMP_MODULES}/" "$initramfsdir/initramfs.conf"
+fi
+
 # Add scsi_dh_* modules if in use otherwise
 # kexec reboot on multipath will fail
 # (LP: #1635597)
 for I in $(lsmod | grep scsi_dh | cut -d" " -f1);do
 	echo "${I}" >> $initramfsdir/modules
 done
-
-sed -e 's/MODULES=.*/MODULES=dep/' /etc/initramfs-tools/initramfs.conf > "$initramfsdir/initramfs.conf" || true
-if ! [ -e "$initramfsdir/initramfs.conf" ];then
-	echo >&2 "W: kdump-tools: Unable to create $initramfsdir/initramfs.conf"
-	exit 2
-fi
 
 # Mark our custom initramfs.conf to indicate that kdump-tools
 # hooks/scripts should run/get included in our minimal initrd.
