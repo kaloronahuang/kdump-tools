@@ -80,5 +80,5 @@ else
 	mkinitramfs_return="$?"
 	rm -f "$kdumpdir/initrd.img-${version}.new"
 	echo "update-initramfs: failed for $kdumpdir/initrd.img-${version} with $mkinitramfs_return." >&2
-        exit $mkinitramfs_return
+	exit $mkinitramfs_return
 fi
