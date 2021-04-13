@@ -32,15 +32,15 @@ fi
 # We need a modified copy of initramfs-tools directory
 # with MODULES=dep in initramfs.conf
 if [ ! -d "$kdumpdir" ];then
-	mkdir "$kdumpdir" || true
+	mkdir -p "$kdumpdir"
 fi
 # Force re-creation of $kdumpdir/initramfs-tools
 # in case the source has changed since last time
 # we ran
 if [ -d "$kdumpdir/initramfs-tools" ];then
-	rm -Rf $kdumpdir/initramfs-tools || true
+	rm -Rf $kdumpdir/initramfs-tools
 fi
-cp -pr /etc/initramfs-tools "$kdumpdir" || true
+cp -pr /etc/initramfs-tools "$kdumpdir"
 
 initramfsdir="$kdumpdir/initramfs-tools"
 
@@ -70,7 +70,7 @@ echo "KDUMP=y" >> $initramfsdir/initramfs.conf
 # Cleaning up existing initramfs with same version
 # as mkinitramfs do not have a force option
 if [ -e "$kdumpdir/initrd.img-${version}" ];then
-	rm -f "$kdumpdir/initrd.img-${version}" || true
+	rm -f "$kdumpdir/initrd.img-${version}"
 fi
 
 # we're good - create initramfs.
