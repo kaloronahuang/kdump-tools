@@ -1,6 +1,7 @@
-#!/bin/sh -e
+#!/bin/sh
+set -eu
 
-version="$1"
+version="${1-}"
 kdumpdir="/var/lib/kdump"
 
 [ -x /usr/sbin/mkinitramfs ] || exit 0
@@ -16,12 +17,12 @@ if ! linux-version list | grep "${version}" > /dev/null ; then
 fi
 
 # exit if kernel does not need an initramfs
-if [ "$INITRD" = 'No' ]; then
+if [ "${INITRD-}" = 'No' ]; then
 	exit 0
 fi
 
 # avoid running multiple times
-if [ -n "$DEB_MAINT_PARAMS" ]; then
+if [ -n "${DEB_MAINT_PARAMS-}" ]; then
 	eval set -- "$DEB_MAINT_PARAMS"
 	if [ -z "$1" ] || [ "$1" != "configure" ]; then
 		exit 0
