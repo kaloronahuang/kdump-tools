@@ -886,11 +886,11 @@ kdump_save_core_to_ftp()
 
 	# did we succeed?
 	if [ $ERROR -ne 0 ]; then
-		log_failure_msg "$NAME: failed to save vmcore via FTP in $KDUMP_REMOTE_HOST:$KDUMP_COREFILE"
-		logger -t $NAME "failed to save vmcore via FTP in $KDUMP_REMOTE_HOST:$KDUMP_COREFILE"
+		log_failure_msg "$NAME: failed to save vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
+		logger -t $NAME "failed to save vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
 	else
-		log_success_msg "$NAME: saved vmcore via FTP in $KDUMP_REMOTE_HOST:$KDUMP_COREFILE"
-		logger -t $NAME "saved vmcore via FTP in $KDUMP_REMOTE_HOST:$KDUMP_COREFILE"
+		log_success_msg "$NAME: saved vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
+		logger -t $NAME "saved vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
 	fi
 
 	# dump the dmesg buffer
