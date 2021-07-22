@@ -1,3 +1,16 @@
+kdump-tools (1:1.6.8.5) UNRELEASED; urgency=medium
+
+  [ Benjamin Drung ]
+  * kdump-config: Fix indentation.
+  * Fix shellcheck "backslash is literal".
+  * kernel-postinst: Correct indentation.
+  * kernel-postinst: Use "set -eu"
+  * kernel-postinst: Honor exit codes of cp/rm/mkdir
+  * kernel-postinst: Only switch MODULES from "most" to "dep"
+  * kernel-postinst: Support /etc/initramfs-tools/conf.d
+
+ -- dann frazier <dannf@debian.org>  Thu, 22 Jul 2021 15:30:19 -0600
+
 kdump-tools (1:1.6.8.4) unstable; urgency=medium
 
   [ Benjamin Drung ]
