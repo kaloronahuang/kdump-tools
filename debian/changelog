@@ -1,3 +1,14 @@
+kdump-tools (1:1.6.8.4) unstable; urgency=medium
+
+  [ Benjamin Drung ]
+  * Fix broken status log messages when dumping w/ FTP (Closes: #991412).
+
+  [ dann frazier ]
+  * Add /var/lib/kdump to debian/kdump-tools.dirs to avoid errors
+    creating the initial set of boot file symlinks (Closes: #991175).
+
+ -- dann frazier <dannf@debian.org>  Thu, 22 Jul 2021 15:18:37 -0600
+
 kdump-tools (1:1.6.8.3) unstable; urgency=medium
 
   * kdump-config: Fix storage of local/NFS dump files
