@@ -21,12 +21,11 @@ Depends: bsdextrautils | bsdmainutils,
          file,
          linux-base,
          lsb-base (>= 3.0-6),
-         makedumpfile,
          ucf,
          ${dist:Depends},
          ${misc:Depends},
          ${shlibs:Depends}
-Recommends: initramfs-tools-core
+Recommends: initramfs-tools-core, makedumpfile
 Description: scripts and tools for automating kdump (Linux crash dumps)
  kdump-tools provides an init script and a configuration script for
  automating the use of kdump.  It uses the makedumpfile utility to
