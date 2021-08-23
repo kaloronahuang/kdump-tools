@@ -12,6 +12,8 @@ kdump-tools (1:1.6.8.5) UNRELEASED; urgency=medium
   [ dann frazier ]
   * Demote relationship with makedumpfile from Depends to Recommends
     (Closes: #865701).
+  * Add spanish translation for debconf template, thanks to Camaleón.
+    (Closes: #987520).
 
  -- dann frazier <dannf@debian.org>  Thu, 22 Jul 2021 15:30:19 -0600
 
