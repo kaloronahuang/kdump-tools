@@ -334,7 +334,6 @@ check_relocatable()
 
 check_securelevel()
 {
-	# shellcheck disable=SC2039
 	local sl_path="/sys/kernel/security/securelevel"
 	if [ ! -f "$sl_path" ]; then
 		return 1
@@ -350,7 +349,6 @@ check_securelevel()
 
 check_secure_boot()
 {
-	# shellcheck disable=SC2039
 	local sb_path sb sm
 
 	sb_path=$(find /sys/firmware/efi/efivars -name 'SecureBoot-*' 2>/dev/null)
@@ -1093,7 +1091,6 @@ reload()
 
 condreload()
 {
-	# shellcheck disable=SC2039
 	local sys_loaded="$sys_kexec_crash"
 	if [ "$DUMP_MODE" = "fadump" ] ; then
 		check_fadump_support
