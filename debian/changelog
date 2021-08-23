@@ -1,4 +1,4 @@
-kdump-tools (1:1.6.9) UNRELEASED; urgency=medium
+kdump-tools (1:1.6.9) unstable; urgency=medium
 
   [ Benjamin Drung ]
   * kdump-config: Fix indentation.
@@ -19,7 +19,7 @@ kdump-tools (1:1.6.9) UNRELEASED; urgency=medium
   * Ignore shellcheck SC3043, "In POSIX sh, local is undefined", as
     "local" support is mandated by Debian policy (v4.6.0.1, section 10.4).
 
- -- dann frazier <dannf@debian.org>  Thu, 22 Jul 2021 15:30:19 -0600
+ -- dann frazier <dannf@debian.org>  Mon, 23 Aug 2021 17:02:58 -0600
 
 kdump-tools (1:1.6.8.4) unstable; urgency=medium
 
