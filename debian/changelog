@@ -14,6 +14,7 @@ kdump-tools (1:1.6.8.5) UNRELEASED; urgency=medium
     (Closes: #865701).
   * Add spanish translation for debconf template, thanks to Camaleón.
     (Closes: #987520).
+  * Drop shellcheck autopkgtest (Closes: #992799).
 
  -- dann frazier <dannf@debian.org>  Thu, 22 Jul 2021 15:30:19 -0600
 
