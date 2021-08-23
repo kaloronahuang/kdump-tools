@@ -1,4 +1,4 @@
-kdump-tools (1:1.6.8.5) UNRELEASED; urgency=medium
+kdump-tools (1:1.6.9) UNRELEASED; urgency=medium
 
   [ Benjamin Drung ]
   * kdump-config: Fix indentation.
