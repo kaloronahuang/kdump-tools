@@ -1,8 +1,8 @@
-kdump-tools (1:1.6.10) UNRELEASED; urgency=medium
+kdump-tools (1:1.6.10) unstable; urgency=medium
 
   * kdump-config: Fix FTBFS due to new shellcheck warning (Closes: #1002270).
 
- -- dann frazier <dannf@debian.org>  Wed, 22 Dec 2021 08:36:29 -0700
+ -- dann frazier <dannf@debian.org>  Wed, 22 Dec 2021 08:38:12 -0700
 
 kdump-tools (1:1.6.9) unstable; urgency=medium
 
