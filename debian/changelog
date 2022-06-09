@@ -1,4 +1,4 @@
-kdump-tools (1:1.7) UNRELEASED; urgency=medium
+kdump-tools (1:1.7) unstable; urgency=medium
 
   [ Guilherme G. Piccoli ]
   * kdump-tools.service: Start kdump service a bit earlier in boot.
@@ -6,7 +6,7 @@ kdump-tools (1:1.7) UNRELEASED; urgency=medium
   [ Kellen Renshaw ]
   * rules: Remove "ata_piix.prefer_ms_hyperv=0" (Closes: #1011960).
 
- -- dann frazier <dannf@debian.org>  Wed, 19 Jan 2022 15:56:03 -0700
+ -- dann frazier <dannf@debian.org>  Thu, 09 Jun 2022 15:29:58 -0600
 
 kdump-tools (1:1.6.10) unstable; urgency=medium
 
