@@ -712,6 +712,21 @@ compression_extension() {
 	esac
 }
 
+# dump the dmesg buffer
+dump_dmesg()
+{
+	local vmcore="$1"
+	local outfile="$2"
+
+	log_action_msg "running makedumpfile --dump-dmesg $vmcore $outfile"
+	if makedumpfile --dump-dmesg "$vmcore" "$outfile"; then
+		return 0
+	fi
+
+	log_failure_msg "$NAME: makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
+	logger -t $NAME "makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
+	return 1
+}
 
 # Saving the vmcore:
 #	Our priorities are:
@@ -804,13 +819,8 @@ kdump_save_core()
 
 	# dump the dmesg buffer
 	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
-		log_action_msg "running makedumpfile --dump-dmesg $vmcore_file $KDUMP_DMESGFILE"
-		makedumpfile --dump-dmesg $vmcore_file "$KDUMP_DMESGFILE"
+		dump_dmesg $vmcore_file "$KDUMP_DMESGFILE"
 		ERROR=$?
-		if [ $ERROR -ne 0 ] ; then
-			log_failure_msg "$NAME: makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
-			logger -t $NAME "makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
-		fi
 
 		# did we succeed?
 		if [ $ERROR -eq 0 ]; then
@@ -893,13 +903,9 @@ kdump_save_core_to_ftp()
 
 	# dump the dmesg buffer
 	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
-		log_action_msg "running makedumpfile --dump-dmesg $vmcore_file $FTP_TMPDMESG"
-		makedumpfile --dump-dmesg $vmcore_file "$FTP_TMPDMESG"
+		dump_dmesg $vmcore_file "$FTP_TMPDMESG"
 		ERROR=$?
-		if [ $ERROR -ne 0 ] ; then
-			log_failure_msg "$NAME: makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
-			logger -t $NAME "makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
-		else
+		if [ $ERROR -eq 0 ] ; then
 			# shellcheck disable=SC2086
 			busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_DMESGFILE" "$FTP_TMPDMESG"
 			ERROR=$?
@@ -982,13 +988,9 @@ kdump_save_core_to_ssh()
 
 	# dump the dmesg buffer
 	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
-		log_action_msg "running makedumpfile --dump-dmesg $vmcore_file $KDUMP_TMPDMESG"
-		makedumpfile --dump-dmesg $vmcore_file "$SSH_TMPDMESG"
+		dump_dmesg $vmcore_file "$SSH_TMPDMESG"
 		ERROR=$?
-		if [ "$ERROR" -ne 0 ] ; then
-			log_failure_msg "$NAME: makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
-			logger -t $NAME "makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
-		else
+		if [ "$ERROR" -eq 0 ] ; then
 			scp -i $SSH_KEY "$SSH_TMPDMESG" "$SSH_REMOTE_HOST:$SSH_DMESGFILE"
 			ERROR=$?
 		fi
