@@ -793,6 +793,22 @@ kdump_save_core()
 		mkdir -p "$KDUMP_STAMPDIR"
 	fi
 
+	# dump the dmesg buffer
+	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
+		dump_dmesg $vmcore_file "$KDUMP_DMESGFILE"
+		ERROR=$?
+
+		# did we succeed?
+		if [ $ERROR -eq 0 ]; then
+			log_success_msg "$NAME: saved dmesg content in $KDUMP_STAMPDIR"
+			logger -t $NAME "saved dmesg content in $KDUMP_STAMPDIR"
+			sync
+		else
+			log_failure_msg "$NAME: failed to save dmesg content in $KDUMP_STAMPDIR"
+			logger -t $NAME "failed to save dmesg content in $KDUMP_STAMPDIR"
+		fi
+	fi
+
 	log_action_msg "running makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress > $KDUMP_CORETEMP"
 	# shellcheck disable=SC2086
 	makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress > "$KDUMP_CORETEMP"
@@ -815,22 +831,6 @@ kdump_save_core()
 	else
 		log_failure_msg "$NAME: failed to save vmcore in $KDUMP_STAMPDIR"
 		logger -t $NAME "failed to save vmcore in $KDUMP_STAMPDIR"
-	fi
-
-	# dump the dmesg buffer
-	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
-		dump_dmesg $vmcore_file "$KDUMP_DMESGFILE"
-		ERROR=$?
-
-		# did we succeed?
-		if [ $ERROR -eq 0 ]; then
-			log_success_msg "$NAME: saved dmesg content in $KDUMP_STAMPDIR"
-			logger -t $NAME "saved dmesg content in $KDUMP_STAMPDIR"
-			sync
-		else
-			log_failure_msg "$NAME: failed to save dmesg content in $KDUMP_STAMPDIR"
-			logger -t $NAME "failed to save dmesg content in $KDUMP_STAMPDIR"
-		fi
 	fi
 
 	# limit the number of dumps kept on the local machine
@@ -887,20 +887,6 @@ kdump_save_core_to_ftp()
 		FTPPUT_ARGS="$FTPPUT_ARGS -P $FTP_PORT"
 	fi
 
-	log_action_msg "sending makedumpfile $MAKEDUMP_ARGS $vmcore_file via FTP to $FTP_REMOTE_HOST:$FTP_COREFILE"
-	# shellcheck disable=SC2086
-	makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress | busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_COREFILE" -
-	ERROR=$?
-
-	# did we succeed?
-	if [ $ERROR -ne 0 ]; then
-		log_failure_msg "$NAME: failed to save vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
-		logger -t $NAME "failed to save vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
-	else
-		log_success_msg "$NAME: saved vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
-		logger -t $NAME "saved vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
-	fi
-
 	# dump the dmesg buffer
 	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
 		dump_dmesg $vmcore_file "$FTP_TMPDMESG"
@@ -919,6 +905,20 @@ kdump_save_core_to_ftp()
 			log_failure_msg "$NAME: failed to save dmesg content via FTP in $FTP_REMOTE_HOST:$FTP_DMESGFILE"
 			logger -t $NAME "failed to save dmesg content via FTP in $FTP_REMOTE_HOST:$FTP_DMESGFILE"
 		fi
+	fi
+
+	log_action_msg "sending makedumpfile $MAKEDUMP_ARGS $vmcore_file via FTP to $FTP_REMOTE_HOST:$FTP_COREFILE"
+	# shellcheck disable=SC2086
+	makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress | busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_COREFILE" -
+	ERROR=$?
+
+	# did we succeed?
+	if [ $ERROR -ne 0 ]; then
+		log_failure_msg "$NAME: failed to save vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
+		logger -t $NAME "failed to save vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
+	else
+		log_success_msg "$NAME: saved vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
+		logger -t $NAME "saved vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
 	fi
 
 	return $ERROR
@@ -956,6 +956,25 @@ kdump_save_core_to_ssh()
 		return 1
 	fi
 
+	# dump the dmesg buffer
+	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
+		dump_dmesg $vmcore_file "$SSH_TMPDMESG"
+		ERROR=$?
+		if [ "$ERROR" -eq 0 ] ; then
+			scp -i $SSH_KEY "$SSH_TMPDMESG" "$SSH_REMOTE_HOST:$SSH_DMESGFILE"
+			ERROR=$?
+		fi
+
+		# did we succeed?
+		if [ "$ERROR" -eq 0 ]; then
+			log_success_msg "$NAME: saved dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
+			logger -t $NAME "saved dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
+		else
+			log_failure_msg "$NAME: failed to save dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
+			logger -t $NAME "failed to save dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
+		fi
+	fi
+
 	log_action_msg "sending makedumpfile $MAKEDUMP_ARGS $vmcore_file to $SSH_REMOTE_HOST : $SSH_CORETEMP"
 	# shellcheck disable=SC2086
 	makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress | ssh -i $SSH_KEY "$SSH_REMOTE_HOST" dd "of=$SSH_CORETEMP"
@@ -986,26 +1005,7 @@ kdump_save_core_to_ssh()
 		logger -t $NAME "saved vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
 	fi
 
-	# dump the dmesg buffer
-	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
-		dump_dmesg $vmcore_file "$SSH_TMPDMESG"
-		ERROR=$?
-		if [ "$ERROR" -eq 0 ] ; then
-			scp -i $SSH_KEY "$SSH_TMPDMESG" "$SSH_REMOTE_HOST:$SSH_DMESGFILE"
-			ERROR=$?
-		fi
-
-		# did we succeed?
-		if [ "$ERROR" -eq 0 ]; then
-			log_success_msg "$NAME: saved dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
-			logger -t $NAME "saved dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
-			return 0;
-		else
-			log_failure_msg "$NAME: failed to save dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
-			logger -t $NAME "failed to save dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
-			return 1;
-		fi
-	fi
+	return $ERROR
 }
 
 kdump_propagate()
