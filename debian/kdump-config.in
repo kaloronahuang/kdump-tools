@@ -974,7 +974,6 @@ kdump_save_core_to_ssh()
 	if [ $ERROR -ne 0 ]; then
 		log_failure_msg "$NAME: failed to save vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
 		logger -t $NAME "failed to save vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
-		sync
 	else
 		ssh -i $SSH_KEY "$SSH_REMOTE_HOST" mv "$SSH_CORETEMP" "$SSH_COREFILE"
 		log_success_msg "$NAME: saved vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
