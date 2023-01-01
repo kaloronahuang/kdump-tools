@@ -59,7 +59,7 @@ MAKEDUMP_ARGS=${MAKEDUMP_ARGS:="-F -c -d 31"}
 
 KDUMP_CMDLINE_APPEND=${KDUMP_CMDLINE_APPEND:="@KDUMP_CMDLINE_APPEND@"}
 KDUMP_KERNEL_HOOK="/etc/kernel/postinst.d/kdump-tools"
-[ -d $KDUMP_COREDIR ] || mkdir -p $KDUMP_COREDIR ;
+[ -d "$KDUMP_COREDIR" ] || mkdir -p "$KDUMP_COREDIR" ;
 
 IOMEM_ADDR=$(grep -i "Crash kernel" /proc/iomem | sed "s/-..*//" | sed "s/^[ 0]*/0x/")
 
@@ -175,8 +175,8 @@ kdump_show()
 	echo
 	echo "kexec command:"
 	printf "  "
-	if [ -e $kexec_cmd_file ] ; then
-		cat $kexec_cmd_file ;
+	if [ -e "$kexec_cmd_file" ] ; then
+		cat "$kexec_cmd_file" ;
 	else
 		echo "no kexec command recorded"
 	fi
@@ -263,7 +263,7 @@ manage_symlinks()
 			if [ $ret -eq 1 ];then
 				log_failure_msg "Invalid symlink : $KDUMP_DIR/$symlink"
 				if [ ! "$DRY_RUN" ];then
-					create_symlink $symlink "$KVER"
+					create_symlink "$symlink" "$KVER"
 				fi
 			fi
 		done
@@ -454,12 +454,12 @@ fadump_register()
 	rc=$(cat $sys_fadump_registered)
 	if [ "$rc" -ne 1 ] ; then
 		log_failure_msg "fadump registering failed"
-		logger -t $NAME "fadump registering failed"
+		logger -t "$NAME" "fadump registering failed"
 		[ ! "$DRY_RUN" ] && exit 1;
 	fi
 
 	log_success_msg "fadump registered successfully"
-	logger -t $NAME "fadump registered successfully"
+	logger -t "$NAME" "fadump registered successfully"
 
 	# Apply panic triggers according to config file
 	apply_panic_triggers
@@ -475,12 +475,12 @@ fadump_unregister()
 	rc=$(cat $sys_fadump_registered)
 	if [ "$rc" -ne 0 ] ; then
 		log_failure_msg "fadump un-registering failed"
-		logger -t $NAME "fadump un-registering failed"
+		logger -t "$NAME" "fadump un-registering failed"
 		[ ! "$DRY_RUN" ] && exit 1;
 	fi
 
 	log_success_msg "fadump un-registered successfully"
-	logger -t $NAME "fadump un-registered successfully"
+	logger -t "$NAME" "fadump un-registered successfully"
 }
 
 kdump_create_symlinks()
@@ -591,10 +591,10 @@ kdump_unload()
 	# shellcheck disable=SC2181
 	if [ $? -eq 0 ]; then
 		log_success_msg "unloaded kdump kernel"
-		logger -t $NAME "unloaded kdump kernel"
+		logger -t "$NAME" "unloaded kdump kernel"
 	else
 		log_failure_msg "failed to unload kdump kernel"
-		logger -t $NAME "failed to unload kdump kernel"
+		logger -t "$NAME" "failed to unload kdump kernel"
 		[ ! "$DRY_RUN" ] && exit 1;
 	fi
 }
@@ -724,7 +724,7 @@ dump_dmesg()
 	fi
 
 	log_failure_msg "$NAME: makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
-	logger -t $NAME "makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
+	logger -t "$NAME" "makedumpfile --dump-dmesg failed. dmesg content will be unavailable"
 	return 1
 }
 
@@ -752,7 +752,7 @@ kdump_save_core()
 		MOUNTOPTS="-o nolock -o tcp -o soft -o timeo=${NFS_TIMEO} -o retrans=${NFS_RETRANS}"
 
 		CNT=${NFS_MOUNT_RETRY}
-		while [ $CNT -ne 0 ];do
+		while [ "$CNT" -ne 0 ];do
 			# shellcheck disable=SC2086
 			mount -t nfs $MOUNTOPTS "$NFS" $KDUMP_COREDIR
 			ERROR=$?
@@ -765,9 +765,9 @@ kdump_save_core()
 			fi
 		done
 
-		if [ $ERROR -ne 0 ];then
+		if [ "$ERROR" -ne 0 ];then
 			log_failure_msg "$NAME: Unable to mount remote NFS directory $NFS. Cannot save core"
-			logger -t $NAME "Unable to mount remote NFS directory $NFS. Cannot save core"
+			logger -t "$NAME" "Unable to mount remote NFS directory $NFS. Cannot save core"
 			return 1;
 		fi
 
@@ -778,16 +778,16 @@ kdump_save_core()
 
 		if [ $ERROR -ne 0 ];then
 			log_failure_msg "$NAME: Unable to write to the remote NFS directory $NFS. Cannot save core"
-			logger -t $NAME "Unable to write to the remote NFS directory $NFS. Cannot save core"
-			umount $KDUMP_COREDIR
+			logger -t "$NAME" "Unable to write to the remote NFS directory $NFS. Cannot save core"
+			umount "$KDUMP_COREDIR"
 			UMNT_ERROR=$?
 			if [ $UMNT_ERROR -ne 0 ];then
 				log_failure_msg "$NAME: Unable to cleanly unmount the NFS file system"
-				logger -t $NAME "Unable to cleanly unmount the NFS file system"
+				logger -t "$NAME" "Unable to cleanly unmount the NFS file system"
 			fi
 		else
 			log_action_msg "Dumping to NFS mountpoint $NFS/$KDUMP_STAMP"
-			logger -t $NAME "Dumping to NFS mountpoint $NFS/$KDUMP_STAMP"
+			logger -t "$NAME" "Dumping to NFS mountpoint $NFS/$KDUMP_STAMP"
 		fi
 	else
 		mkdir -p "$KDUMP_STAMPDIR"
@@ -801,11 +801,11 @@ kdump_save_core()
 		# did we succeed?
 		if [ $ERROR -eq 0 ]; then
 			log_success_msg "$NAME: saved dmesg content in $KDUMP_STAMPDIR"
-			logger -t $NAME "saved dmesg content in $KDUMP_STAMPDIR"
+			logger -t "$NAME" "saved dmesg content in $KDUMP_STAMPDIR"
 			sync
 		else
 			log_failure_msg "$NAME: failed to save dmesg content in $KDUMP_STAMPDIR"
-			logger -t $NAME "failed to save dmesg content in $KDUMP_STAMPDIR"
+			logger -t "$NAME" "failed to save dmesg content in $KDUMP_STAMPDIR"
 		fi
 	fi
 
@@ -815,7 +815,7 @@ kdump_save_core()
 	ERROR=$?
 	if [ $ERROR -ne 0 ] ; then
 		log_failure_msg "$NAME: makedumpfile failed, falling back to 'cp'"
-		logger -t $NAME "makedumpfile failed, falling back to 'cp'"
+		logger -t "$NAME" "makedumpfile failed, falling back to 'cp'"
 		KDUMP_CORETEMP="$KDUMP_STAMPDIR/vmcore-incomplete"
 		KDUMP_COREFILE="$KDUMP_STAMPDIR/vmcore.$KDUMP_STAMP"
 		cp $vmcore_file "$KDUMP_CORETEMP"
@@ -826,33 +826,33 @@ kdump_save_core()
 	if [ $ERROR -eq 0 ]; then
 		mv "$KDUMP_CORETEMP" "$KDUMP_COREFILE"
 		log_success_msg "$NAME: saved vmcore in $KDUMP_STAMPDIR"
-		logger -t $NAME "saved vmcore in $KDUMP_STAMPDIR"
+		logger -t "$NAME" "saved vmcore in $KDUMP_STAMPDIR"
 		sync
 	else
 		log_failure_msg "$NAME: failed to save vmcore in $KDUMP_STAMPDIR"
-		logger -t $NAME "failed to save vmcore in $KDUMP_STAMPDIR"
+		logger -t "$NAME" "failed to save vmcore in $KDUMP_STAMPDIR"
 	fi
 
 	# limit the number of dumps kept on the local machine
-	if [ -z "${NFS}" ] && [ $ERROR -eq 0 ] && [ $KDUMP_NUM_DUMPS -gt 0 ] ; then
-		num_dumps=$(find $KDUMP_COREDIR -mindepth 1 -maxdepth 1 -name '2*' | wc -l)
-		if [ "$num_dumps" -gt $KDUMP_NUM_DUMPS ] ; then
+	if [ -z "${NFS}" ] && [ $ERROR -eq 0 ] && [ "$KDUMP_NUM_DUMPS" -gt 0 ] ; then
+		num_dumps=$(find "$KDUMP_COREDIR" -mindepth 1 -maxdepth 1 -name '2*' | wc -l)
+		if [ "$num_dumps" -gt "$KDUMP_NUM_DUMPS" ] ; then
 			purge_num=$((num_dumps - KDUMP_NUM_DUMPS))
-			purge_dir=$(find $KDUMP_COREDIR -mindepth 1 -maxdepth 1 -name '2*' -print0 | sort -Vz | head -z -n $purge_num | tr "\\0" " ")
+			purge_dir=$(find "$KDUMP_COREDIR" -mindepth 1 -maxdepth 1 -name '2*' -print0 | sort -Vz | head -z -n $purge_num | tr "\\0" " ")
 			log_action_msg "Too many dumps, purging: $purge_dir"
-			logger -t $NAME "Too many dumps, purging: $purge_dir"
-			find $KDUMP_COREDIR -mindepth 1 -maxdepth 1 -name '2*' -print0 | sort -Vz | head -z -n $purge_num | xargs -0 rm -rf
+			logger -t "$NAME" "Too many dumps, purging: $purge_dir"
+			find "$KDUMP_COREDIR" -mindepth 1 -maxdepth 1 -name '2*' -print0 | sort -Vz | head -z -n $purge_num | xargs -0 rm -rf
 		fi
 	fi
 
 	# If we use NFS, umount the remote FS
 	#
 	if [ -n "$NFS" ];then
-		umount $KDUMP_COREDIR
+		umount "$KDUMP_COREDIR"
 		UMNT_ERROR=$?
 		if [ $UMNT_ERROR -ne 0 ] ; then
 			log_failure_msg "$NAME: Unable to cleanly unmount the NFS file system"
-			logger -t $NAME "Unable to cleanly unmount the NFS file system"
+			logger -t "$NAME" "Unable to cleanly unmount the NFS file system"
 		fi
 	fi
 
@@ -900,10 +900,10 @@ kdump_save_core_to_ftp()
 		# did we succeed?
 		if [ $ERROR -eq 0 ]; then
 			log_success_msg "$NAME: saved dmesg content via FTP in $FTP_REMOTE_HOST:$FTP_DMESGFILE"
-			logger -t $NAME "saved dmesg content via FTP in $FTP_REMOTE_HOST:$FTP_DMESGFILE"
+			logger -t "$NAME" "saved dmesg content via FTP in $FTP_REMOTE_HOST:$FTP_DMESGFILE"
 		else
 			log_failure_msg "$NAME: failed to save dmesg content via FTP in $FTP_REMOTE_HOST:$FTP_DMESGFILE"
-			logger -t $NAME "failed to save dmesg content via FTP in $FTP_REMOTE_HOST:$FTP_DMESGFILE"
+			logger -t "$NAME" "failed to save dmesg content via FTP in $FTP_REMOTE_HOST:$FTP_DMESGFILE"
 		fi
 	fi
 
@@ -915,10 +915,10 @@ kdump_save_core_to_ftp()
 	# did we succeed?
 	if [ $ERROR -ne 0 ]; then
 		log_failure_msg "$NAME: failed to save vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
-		logger -t $NAME "failed to save vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
+		logger -t "$NAME" "failed to save vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
 	else
 		log_success_msg "$NAME: saved vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
-		logger -t $NAME "saved vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
+		logger -t "$NAME" "saved vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
 	fi
 
 	return $ERROR
@@ -938,10 +938,10 @@ kdump_save_core_to_ssh()
 	SSH_DMESGFILE="$SSH_STAMPDIR/dmesg.$SSH_STAMP"
 
 	CNT=${SSH_KDUMP_RETRY}
-	while [ $CNT -ne 0 ];do
-		ssh -i $SSH_KEY "$SSH_REMOTE_HOST" mkdir -p "$SSH_STAMPDIR"
+	while [ "$CNT" -ne 0 ];do
+		ssh -i "$SSH_KEY" "$SSH_REMOTE_HOST" mkdir -p "$SSH_STAMPDIR"
 		ERROR=$?
-		if [ $ERROR -eq 0 ];then
+		if [ "$ERROR" -eq 0 ];then
 			CNT=0
 		else
 			CNT=$((CNT - 1))
@@ -950,9 +950,9 @@ kdump_save_core_to_ssh()
 		fi
 	done
 
-	if [ $ERROR -ne 0 ]; then
+	if [ "$ERROR" -ne 0 ]; then
 		log_failure_msg "$NAME: Unable to reach remote server $SSH_REMOTE_HOST; can't continue"
-		logger -t $NAME "Unable to reach remote server $SSH_REMOTE_HOST; can't continue"
+		logger -t "$NAME" "Unable to reach remote server $SSH_REMOTE_HOST; can't continue"
 		return 1
 	fi
 
@@ -961,17 +961,17 @@ kdump_save_core_to_ssh()
 		dump_dmesg $vmcore_file "$SSH_TMPDMESG"
 		ERROR=$?
 		if [ "$ERROR" -eq 0 ] ; then
-			scp -i $SSH_KEY "$SSH_TMPDMESG" "$SSH_REMOTE_HOST:$SSH_DMESGFILE"
+			scp -i "$SSH_KEY" "$SSH_TMPDMESG" "$SSH_REMOTE_HOST:$SSH_DMESGFILE"
 			ERROR=$?
 		fi
 
 		# did we succeed?
 		if [ "$ERROR" -eq 0 ]; then
 			log_success_msg "$NAME: saved dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
-			logger -t $NAME "saved dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
+			logger -t "$NAME" "saved dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
 		else
 			log_failure_msg "$NAME: failed to save dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
-			logger -t $NAME "failed to save dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
+			logger -t "$NAME" "failed to save dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
 		fi
 	fi
 
@@ -981,13 +981,13 @@ kdump_save_core_to_ssh()
 	ERROR=$?
 	if [ $ERROR -ne 0 ] ; then
 		log_failure_msg "$NAME: makedumpfile failed, falling back to 'scp'"
-		logger -t $NAME "makedumpfile failed, falling back to 'scp'"
+		logger -t "$NAME" "makedumpfile failed, falling back to 'scp'"
 		SSH_CORETEMP="$SSH_STAMPDIR/vmcore-incomplete"
 		SSH_COREFILE="$SSH_STAMPDIR/vmcore.$SSH_STAMP"
 
-		if ! scp -i $SSH_KEY $vmcore_file "$SSH_REMOTE_HOST:$SSH_CORETEMP"; then
+		if ! scp -i "$SSH_KEY" $vmcore_file "$SSH_REMOTE_HOST:$SSH_CORETEMP"; then
 			log_failure_msg "$NAME: makedumpfile scp failed. The vmcore file will  not be available"
-			logger -t $NAME "makedumpfile scp failed. The vmcore file will  not be available"
+			logger -t "$NAME" "makedumpfile scp failed. The vmcore file will  not be available"
 		else
 			ERROR=0
 		fi
@@ -998,11 +998,11 @@ kdump_save_core_to_ssh()
 	# did we succeed?
 	if [ $ERROR -ne 0 ]; then
 		log_failure_msg "$NAME: failed to save vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
-		logger -t $NAME "failed to save vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
+		logger -t "$NAME" "failed to save vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
 	else
-		ssh -i $SSH_KEY "$SSH_REMOTE_HOST" mv "$SSH_CORETEMP" "$SSH_COREFILE"
+		ssh -i "$SSH_KEY" "$SSH_REMOTE_HOST" mv "$SSH_CORETEMP" "$SSH_COREFILE"
 		log_success_msg "$NAME: saved vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
-		logger -t $NAME "saved vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
+		logger -t "$NAME" "saved vmcore in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
 	fi
 
 	return $ERROR
@@ -1017,7 +1017,7 @@ kdump_propagate()
 	# if remote ssh dump is configured
 	if [ -z "$KDUMP_REMOTE_HOST" ];then
 		log_failure_msg "$NAME: Remote ssh dump is not configured. No reason to propagate"
-		logger -t $NAME "Remote ssh dump is not configured. No reason to propagate"
+		logger -t "$NAME" "Remote ssh dump is not configured. No reason to propagate"
 		return 1;
 	fi
 
@@ -1026,21 +1026,21 @@ kdump_propagate()
 		echo "Using existing key $KDUMP_SSH_KEY"
 	else
 		echo "Need to generate a new ssh key..."
-		/usr/bin/ssh-keygen -t rsa -f $KDUMP_SSH_KEY -N "" >/dev/null 2>&1
+		/usr/bin/ssh-keygen -t rsa -f "$KDUMP_SSH_KEY" -N "" >/dev/null 2>&1
 	fi
 
 	KDUMP_SSH_USER=${KDUMP_REMOTE_HOST%@*}
 	KDUMP_SSH_TARGET=${KDUMP_REMOTE_HOST#*@}
 
-	ssh-copy-id -i $KDUMP_SSH_KEY "$KDUMP_SSH_USER@$KDUMP_SSH_TARGET" >/dev/null 2>&1
+	ssh-copy-id -i "$KDUMP_SSH_KEY" "$KDUMP_SSH_USER@$KDUMP_SSH_TARGET" >/dev/null 2>&1
 	ERROR=$?
 
 	if [ $ERROR -ne 0 ];then
 		log_failure_msg "$NAME: $KDUMP_SSH_KEY failed to be sent to $KDUMP_REMOTE_HOST"
-		logger -t $NAME "$KDUMP_SSH_KEY failed to be sent to $KDUMP_REMOTE_HOST"
+		logger -t "$NAME" "$KDUMP_SSH_KEY failed to be sent to $KDUMP_REMOTE_HOST"
 		return 1;
 	else
-		logger -t $NAME "propagated ssh key $KDUMP_SSH_KEY to server $KDUMP_REMOTE_HOST"
+		logger -t "$NAME" "propagated ssh key $KDUMP_SSH_KEY to server $KDUMP_REMOTE_HOST"
 		echo "propagated ssh key $KDUMP_SSH_KEY to server $KDUMP_REMOTE_HOST"
 		return 0;
 	fi
@@ -1135,7 +1135,7 @@ case "$1" in
 	reload
 	;;
   condreload|try-reload)
-	condreload 9>$lock_file
+	condreload 9>"$lock_file"
 	;;
   status)
 	if [ "$DUMP_MODE" = "fadump" ]; then

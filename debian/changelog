@@ -1,3 +1,10 @@
+kdump-tools (1:1.8.1) UNRELEASED; urgency=medium
+
+  * kdump-config: Add double quotes to address shellcheck SC2086,
+    fixing FTBFS. (Closes: #1027573)
+
+ -- dann frazier <dannf@debian.org>  Sun, 01 Jan 2023 10:37:24 -0700
+
 kdump-tools (1:1.8) unstable; urgency=medium
 
   [ Qi Zheng ]
