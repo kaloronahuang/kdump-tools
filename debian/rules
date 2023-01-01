@@ -12,9 +12,9 @@ KDUMP_CMDLINE_APPEND = reset_devices systemd.unit=kdump-tools-dump.service
 ifeq ($(DEB_HOST_ARCH),arm64)
 	KDUMP_CMDLINE_APPEND += nr_cpus=1
 else ifeq ($(DEB_HOST_ARCH),ppc64el)
-	KDUMP_CMDLINE_APPEND += maxcpus=1 irqpoll noirqdistrib nousb
+	KDUMP_CMDLINE_APPEND += maxcpus=1 irqpoll noirqdistrib usbcore.nousb
 else
-	KDUMP_CMDLINE_APPEND += nr_cpus=1 irqpoll nousb
+	KDUMP_CMDLINE_APPEND += nr_cpus=1 irqpoll usbcore.nousb
 endif
 
 %:

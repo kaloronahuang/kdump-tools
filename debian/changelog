@@ -2,6 +2,8 @@ kdump-tools (1:1.8.1) UNRELEASED; urgency=medium
 
   * kdump-config: Add double quotes to address shellcheck SC2086,
     fixing FTBFS. (Closes: #1027573)
+  * Pass "usbcore.nousb" to the crash kernel instead of "nousb".
+    (Closes: #922705)
 
  -- dann frazier <dannf@debian.org>  Sun, 01 Jan 2023 10:37:24 -0700
 
