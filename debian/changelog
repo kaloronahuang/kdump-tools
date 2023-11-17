@@ -1,3 +1,10 @@
+kdump-tools (1:1.8.2) UNRELEASED; urgency=medium
+
+  * Disable the initramfs generation in our kernel-postinst hook when
+    we detect we are running in a chroot. LP: #2043059.
+
+ -- dann frazier <dannf@debian.org>  Thu, 14 Dec 2023 15:15:28 -0700
+
 kdump-tools (1:1.8.1) unstable; urgency=medium
 
   * kdump-config: Add double quotes to address shellcheck SC2086,

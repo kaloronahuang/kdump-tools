@@ -21,6 +21,13 @@ if [ "${INITRD-}" = 'No' ]; then
 	exit 0
 fi
 
+# initramfs generation may fail, or include an inappropriate set of kernel
+# modules in a chroot. Leave it to the target system to handle on reboot
+if [ -x "$(command -v ischroot)" ] && ischroot; then
+	echo "W: kdump-tools: Executing in a chroot, skipping initramfs generation." >&2
+	exit 0;
+fi
+
 # avoid running multiple times
 if [ -n "${DEB_MAINT_PARAMS-}" ]; then
 	eval set -- "$DEB_MAINT_PARAMS"
