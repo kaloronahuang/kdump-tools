@@ -878,6 +878,10 @@ compress() {
 	esac
 }
 
+have_makedumpfile() {
+    [ -x "$(command -v makedumpfile)" ]
+}
+
 compression_extension() {
 	case "$KDUMP_COMPRESSION" in
 	  bzip2)
@@ -900,6 +904,11 @@ dump_dmesg()
 {
 	local vmcore="$1"
 	local outfile="$2"
+
+	if ! have_makedumpfile; then
+		log_warning_msg "makedumpfile not installed, cannot extract dmesg"
+		return 77
+	fi
 
 	log_action_msg "running makedumpfile --dump-dmesg $vmcore $outfile"
 	if makedumpfile --dump-dmesg "$vmcore" "$outfile"; then
@@ -981,26 +990,36 @@ kdump_save_core()
 		dump_dmesg $vmcore_file "$KDUMP_DMESGFILE"
 		ERROR=$?
 
-		# did we succeed?
-		if [ $ERROR -eq 0 ]; then
-			log_success_msg "$NAME: saved dmesg content in $KDUMP_STAMPDIR"
-			logger -t "$NAME" "saved dmesg content in $KDUMP_STAMPDIR"
-			sync
-		else
-			log_failure_msg "$NAME: failed to save dmesg content in $KDUMP_STAMPDIR"
-			logger -t "$NAME" "failed to save dmesg content in $KDUMP_STAMPDIR"
-		fi
+		case "$ERROR" in
+			0)
+				log_success_msg "$NAME: saved dmesg content in $KDUMP_STAMPDIR"
+				logger -t "$NAME" "saved dmesg content in $KDUMP_STAMPDIR"
+				sync
+				;;
+			77)
+				;;
+			*)
+				log_failure_msg "$NAME: failed to save dmesg content in $KDUMP_STAMPDIR"
+				logger -t "$NAME" "failed to save dmesg content in $KDUMP_STAMPDIR"
+				;;
+		esac
 	fi
 
-	log_action_msg "running makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress > $KDUMP_CORETEMP"
-	# shellcheck disable=SC2086
-	makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress > "$KDUMP_CORETEMP"
-	ERROR=$?
-	if [ $ERROR -ne 0 ] ; then
-		log_failure_msg "$NAME: makedumpfile failed, falling back to 'cp'"
-		logger -t "$NAME" "makedumpfile failed, falling back to 'cp'"
+	ERROR=0
+	if have_makedumpfile; then
+		log_action_msg "running makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress > $KDUMP_CORETEMP"
+		# shellcheck disable=SC2086
+		makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress > "$KDUMP_CORETEMP"
+		ERROR=$?
+		if [ $ERROR -ne 0 ] ; then
+			log_failure_msg "$NAME: makedumpfile failed, falling back to 'cp'"
+			logger -t "$NAME" "makedumpfile failed, falling back to 'cp'"
+		fi
+	fi
+	if ! have_makedumpfile || [ "$ERROR" -ne 0 ]; then
 		KDUMP_CORETEMP="$KDUMP_STAMPDIR/vmcore-incomplete"
 		KDUMP_COREFILE="$KDUMP_STAMPDIR/vmcore.$KDUMP_STAMP"
+		log_action_msg "running cp $vmcore_file $KDUMP_CORETEMP"
 		cp $vmcore_file "$KDUMP_CORETEMP"
 		ERROR=$?
 	fi
@@ -1074,11 +1093,18 @@ kdump_save_core_to_ftp()
 	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
 		dump_dmesg $vmcore_file "$FTP_TMPDMESG"
 		ERROR=$?
-		if [ $ERROR -eq 0 ] ; then
-			# shellcheck disable=SC2086
-			busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_DMESGFILE" "$FTP_TMPDMESG"
-			ERROR=$?
-		fi
+		case "$ERROR" in
+			0)
+				# shellcheck disable=SC2086
+				busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_DMESGFILE" "$FTP_TMPDMESG"
+				ERROR=$?
+				;;
+			77)
+				ERROR=0
+				;;
+			*)
+				;;
+		esac
 
 		# did we succeed?
 		if [ $ERROR -eq 0 ]; then
@@ -1090,10 +1116,22 @@ kdump_save_core_to_ftp()
 		fi
 	fi
 
-	log_action_msg "sending makedumpfile $MAKEDUMP_ARGS $vmcore_file via FTP to $FTP_REMOTE_HOST:$FTP_COREFILE"
-	# shellcheck disable=SC2086
-	makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress | busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_COREFILE" -
-	ERROR=$?
+	if have_makedumpfile; then
+		log_action_msg "sending makedumpfile $MAKEDUMP_ARGS $vmcore_file via FTP to $FTP_REMOTE_HOST:$FTP_COREFILE"
+		# shellcheck disable=SC2086
+		makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress | busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_COREFILE" -
+		ERROR=$?
+		if [ $ERROR -ne 0 ]; then
+			log_failure_msg "$NAME: makedumpfile failed, retrying with full vmcore"
+			logger -t "$NAME: makedumpfile failed, retrying with full vmcore"
+		fi
+	fi
+	if ! have_makedumpfile || [ "$ERROR" -ne 0 ]; then
+		log_action_msg "sending $vmcore_file via FTP to $FTP_REMOTE_HOST:$FTP_COREFILE"
+		# shellcheck disable=SC2086
+		cat $vmcore_file | compress | busybox ftpput $FTPPUT_ARGS "$FTP_REMOTE_HOST" "$FTP_COREFILE" -
+		ERROR=$?
+	fi
 
 	# did we succeed?
 	if [ $ERROR -ne 0 ]; then
@@ -1143,12 +1181,18 @@ kdump_save_core_to_ssh()
 	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
 		dump_dmesg $vmcore_file "$SSH_TMPDMESG"
 		ERROR=$?
-		if [ "$ERROR" -eq 0 ] ; then
-			scp -i "$SSH_KEY" "$SSH_TMPDMESG" "$SSH_REMOTE_HOST:$SSH_DMESGFILE"
-			ERROR=$?
-		fi
+		case "$ERROR" in
+			0)
+				scp -i "$SSH_KEY" "$SSH_TMPDMESG" "$SSH_REMOTE_HOST:$SSH_DMESGFILE"
+				ERROR=$?
+				;;
+			77)
+				ERROR=0
+				;;
+			*)
+				;;
+		esac
 
-		# did we succeed?
 		if [ "$ERROR" -eq 0 ]; then
 			log_success_msg "$NAME: saved dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
 			logger -t "$NAME" "saved dmesg content in $SSH_REMOTE_HOST:$SSH_STAMPDIR"
@@ -1158,24 +1202,26 @@ kdump_save_core_to_ssh()
 		fi
 	fi
 
-	log_action_msg "sending makedumpfile $MAKEDUMP_ARGS $vmcore_file to $SSH_REMOTE_HOST : $SSH_CORETEMP"
-	# shellcheck disable=SC2086
-	makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress | ssh -i $SSH_KEY "$SSH_REMOTE_HOST" dd "of=$SSH_CORETEMP"
-	ERROR=$?
-	if [ $ERROR -ne 0 ] ; then
-		log_failure_msg "$NAME: makedumpfile failed, falling back to 'scp'"
-		logger -t "$NAME" "makedumpfile failed, falling back to 'scp'"
-		SSH_CORETEMP="$SSH_STAMPDIR/vmcore-incomplete"
-		SSH_COREFILE="$SSH_STAMPDIR/vmcore.$SSH_STAMP"
-
-		if ! scp -i "$SSH_KEY" $vmcore_file "$SSH_REMOTE_HOST:$SSH_CORETEMP"; then
+	if have_makedumpfile; then
+		log_action_msg "sending makedumpfile $MAKEDUMP_ARGS $vmcore_file to $SSH_REMOTE_HOST : $SSH_CORETEMP"
+		# shellcheck disable=SC2086
+		makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress | ssh -i $SSH_KEY "$SSH_REMOTE_HOST" dd "of=$SSH_CORETEMP"
+		ERROR=$?
+		if [ $ERROR -ne 0 ] ; then
+			log_failure_msg "$NAME: makedumpfile failed, falling back to 'scp'"
+			logger -t "$NAME" "makedumpfile failed, falling back to 'scp'"
+			SSH_CORETEMP="$SSH_STAMPDIR/vmcore-incomplete"
+			SSH_COREFILE="$SSH_STAMPDIR/vmcore.$SSH_STAMP"
+		fi
+	fi
+	if ! have_makedumpfile || [ "$ERROR" -ne 0 ]; then
+		log_action_msg "sending $vmcore_file to $SSH_REMOTE_HOST : $SSH_CORETEMP"
+		scp -i "$SSH_KEY" $vmcore_file "$SSH_REMOTE_HOST:$SSH_CORETEMP"
+		ERROR=$?
+		if [ "$ERROR" -ne 0 ]; then
 			log_failure_msg "$NAME: makedumpfile scp failed. The vmcore file will  not be available"
 			logger -t "$NAME" "makedumpfile scp failed. The vmcore file will  not be available"
-		else
-			ERROR=0
 		fi
-	else
-		ERROR=0
 	fi
 
 	# did we succeed?
