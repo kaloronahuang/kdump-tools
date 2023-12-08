@@ -57,6 +57,10 @@ override_dh_installdeb:
 override_dh_installudev:
 	dh_installudev -pkdump-tools --priority=50
 
+override_dh_installsystemd:
+	dh_installsystemd -pkdump-tools kdump-tools.service
+	dh_installsystemd -pkdump-tools --name=kdump-tools-dump --no-enable kdump-tools-dump.service
+
 override_dh_auto_clean:
 	rm -f debian/kdump-tools.maintscript
 	rm -f debian/kdump-config debian/kdump-tools.conf debian/kdump-tools.5
