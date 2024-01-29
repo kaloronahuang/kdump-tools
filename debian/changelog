@@ -8,6 +8,9 @@ kdump-tools (1:1.8.3) UNRELEASED; urgency=medium
   * kdump-tools-dump.service: Add soft dependency on the
     systemd-resolved service so that we can resolve names during
     kdump boot.
+  * Bump amd64 crashkernel reservation 384M-:128M to 512M-:192M.
+    This avoids out of memory errors seen during kdump boot
+    with a 4 CPU / 2 GiB KVM instance.
 
  -- dann frazier <dannf@debian.org>  Mon, 29 Jan 2024 12:15:04 -0700
 
