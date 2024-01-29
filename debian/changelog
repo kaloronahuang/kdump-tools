@@ -1,4 +1,4 @@
-kdump-tools (1:1.9) UNRELEASED; urgency=medium
+kdump-tools (1:1.9) unstable; urgency=medium
 
   * Add usrmerge fixes from Chris Hofstaedtler (Closes: #1057798):
     - Let dh_installudev choose location of udev rules.
@@ -12,7 +12,7 @@ kdump-tools (1:1.9) UNRELEASED; urgency=medium
     This avoids out of memory errors seen during kdump boot
     with a 4 CPU / 2 GiB KVM instance.
 
- -- dann frazier <dannf@debian.org>  Mon, 29 Jan 2024 12:15:04 -0700
+ -- dann frazier <dannf@debian.org>  Mon, 29 Jan 2024 14:12:16 -0700
 
 kdump-tools (1:1.8.2) unstable; urgency=medium
 
