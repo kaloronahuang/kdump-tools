@@ -1,4 +1,4 @@
-kdump-tools (1:1.8.3) UNRELEASED; urgency=medium
+kdump-tools (1:1.9) UNRELEASED; urgency=medium
 
   * Add usrmerge fixes from Chris Hofstaedtler (Closes: #1057798):
     - Let dh_installudev choose location of udev rules.
