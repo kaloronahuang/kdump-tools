@@ -3,6 +3,8 @@ kdump-tools (1:1.8.3) UNRELEASED; urgency=medium
   * Add usrmerge fixes from Chris Hofstaedtler (Closes: #1057798):
     - Let dh_installudev choose location of udev rules.
     - Let dh_installsystemd choose location of systemd services.
+  * debian/tests/crash: Merge a change from Ubuntu to wait for the
+    kdump-tools service to become ready before triggering a crash.
 
  -- dann frazier <dannf@debian.org>  Mon, 29 Jan 2024 12:15:04 -0700
 
