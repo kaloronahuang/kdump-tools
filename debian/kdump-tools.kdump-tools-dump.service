@@ -1,7 +1,7 @@
 [Unit]
 Description=Kernel crash dump capture service
-Wants=network-online.target
-After=network-online.target
+Wants=network-online.target systemd-resolved.service
+After=network-online.target systemd-resolved.service
 
 [Service]
 Type=oneshot

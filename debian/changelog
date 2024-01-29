@@ -5,6 +5,9 @@ kdump-tools (1:1.8.3) UNRELEASED; urgency=medium
     - Let dh_installsystemd choose location of systemd services.
   * debian/tests/crash: Merge a change from Ubuntu to wait for the
     kdump-tools service to become ready before triggering a crash.
+  * kdump-tools-dump.service: Add soft dependency on the
+    systemd-resolved service so that we can resolve names during
+    kdump boot.
 
  -- dann frazier <dannf@debian.org>  Mon, 29 Jan 2024 12:15:04 -0700
 
