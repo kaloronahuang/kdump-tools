@@ -1,3 +1,11 @@
+kdump-tools (1:1.8.3) UNRELEASED; urgency=medium
+
+  * Add usrmerge fixes from Chris Hofstaedtler (Closes: #1057798):
+    - Let dh_installudev choose location of udev rules.
+    - Let dh_installsystemd choose location of systemd services.
+
+ -- dann frazier <dannf@debian.org>  Mon, 29 Jan 2024 12:15:04 -0700
+
 kdump-tools (1:1.8.2) unstable; urgency=medium
 
   * Disable the initramfs generation in our kernel-postinst hook when
