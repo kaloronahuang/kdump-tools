@@ -73,6 +73,18 @@ case "$1" in
 	UCF_FORCE_CONFFMISS=1 ucf --debconf-ok "$INITCONFFILE" /etc/default/kdump-tools
 	rm -f "$INITCONFFILE"
 	sync /etc/default/kdump-tools
+
+	# If we never had the kdump crashkernel memory estimator before,
+	# and we already created the minimal initrd for kdump, let's
+	# force it to be recreated (to expose its size to the estimator).
+	KDIR="/var/lib/kdump"
+	if [ ! -f "${KDIR}/size_initrd.img-$(uname -r)" ] && [ -f "${KDIR}/initrd.img-$(uname -r)" ]; then
+		if [ -x /etc/kernel/postinst.d/kdump-tools ]; then
+			/etc/kernel/postinst.d/kdump-tools "$(uname -r)"
+		else
+			logger "kdump-tools: couldn't recreate kdump initrd for the memory estimator"
+		fi
+	fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

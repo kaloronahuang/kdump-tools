@@ -1,3 +1,4 @@
 debian/kdump-config	/usr/sbin
 debian/kdump-tools.conf /usr/share/kdump-tools/
 debian/sysctl.conf /etc/kdump/
+debian/kdump_mem_estimator /usr/share/kdump-tools/

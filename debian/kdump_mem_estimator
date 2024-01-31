@@ -1,0 +1,19 @@
+#!/bin/sh
+KDUMP_DIR="/var/lib/kdump"
+
+if [ ! -x "$(command -v systemctl)" ]; then
+	echo "Couldn't find systemctl" 1>&2
+	exit 1
+fi
+
+# Notice that memory estimation would only be useful and represent the reality
+# if a /proc/meminfo snapshot is collected early on boot, hence we have the
+# check below - basically, we shouldn't collect the snapshot in case this
+# is executed later by the users (manually or via restarting kdump-tools).
+if ! systemctl is-active basic.target 1>/dev/null 2>&1; then
+	# It's very likely this directory is already created, but if for some
+	# reason it isn't, we will fail the memory estimator. So, create the
+	# directory anyway - if it's already there, then this is a NOP.
+	mkdir -p "${KDUMP_DIR}"
+	cat /proc/meminfo 1> "${KDUMP_DIR}/mem-$(uname -r)"
+fi

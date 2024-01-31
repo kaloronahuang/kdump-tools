@@ -109,6 +109,180 @@ kdump-config {help|test|show|status|load|unload|savecore|propagate|symlinks kern
 EOHELP
 }
 
+# Memory Estimator Heuristic
+# The heuristic consists of 6 parts:
+# (a) vmlinux size; (b) decompressed vmlinux estimate;
+# (c) initrd size; (d) decompressed initrd size;
+# (e) memory used early in boot (accounting hugepages, that should be excluded);
+# (f) number of CPUs and RAM size (in the boot environment vs. kdump env.)
+#
+# To calculate each step, we follow the below procedure:
+# * file sizes are used for (a) and (c), so no estimate is needed - worth
+# notice that the initrd memory (c) is freed after initrd decompression;
+#
+# * step (d) is also fully calculated on kdump minimal initrd creation;
+#
+# * step (e) is calculated based on /proc/meminfo collected during the system
+# boot time (in the kdump-tools service) - details in the function below;
+#
+# * finally, steps (b) and (f) requires estimate - we have an empirical
+# modeling for both (like how much memory the CPUs "cost" and how memory usage
+# increases the more RAM the machine has). Details in the commit message.
+# The end value we estimate as the necessary memory for kdump is in MBytes.
+
+# Total surplus estimate (in KiB) - part (f) in the heuristic discussed above.
+CPU_MEM_SURPLUS=0
+
+# Total RAM memory (in KiB), from /proc/meminfo collected early in boot.
+MEM_TOTAL=0
+
+crashkernel_cpumem_surplus()
+{
+	if [ "$ARCH" != "x86_64" ] && [ "$ARCH" != "i386" ]
+	then
+		CPU_MEM_SURPLUS=0
+		return
+	fi
+
+	# We split CPUs and RAM in buckets, according to our experiment.
+	MEM_CPU_BKT1=5000
+	MEM_CPU_BKT2=3500
+	MEM_CPU_BKT3=2500
+	MEM_RAM_BKT1=6000
+	MEM_RAM_BKT2=600
+
+	RAMTOTAL=$((MEM_TOTAL / 1048576)) #in GiB
+	NCPUS=$(nproc)
+
+	# Here we need to fix the collected data:
+	# (a) We need to subtract 1 CPU, since we will have exactly one
+	# CPU during kexec, so it's necessary to reserve memory for it;
+	# (b) Given that we are rounding (down) the amount of memory in
+	# GiB, we need to increment it to prevent cases like a machine
+	# with 512M rounds to 0, or 1.9G rounds to only 1.
+	NCPUS=$((NCPUS - 1))
+	RAMTOTAL=$((RAMTOTAL + 1))
+
+	CPU_BKT2=0
+	CPU_BKT3=0
+	if [ $NCPUS -ge 64 ]; then
+		CPU_BKT1=32
+		CPU_BKT2=32
+		CPU_BKT3=$((NCPUS - 64))
+	else
+		if [ $NCPUS -ge 32 ]; then
+			CPU_BKT1=32
+			CPU_BKT2=$((NCPUS - 32))
+		else
+			CPU_BKT1=$NCPUS
+		fi
+	fi
+
+	RAM_BKT2=0
+	if [ $RAMTOTAL -ge 32 ]; then
+		RAM_BKT1=32
+		RAM_BKT2=$((RAMTOTAL - 32))
+	else
+		RAM_BKT1=$RAMTOTAL
+	fi
+
+	CPU_SURPLUS=$((CPU_BKT1 * MEM_CPU_BKT1 + CPU_BKT2 * MEM_CPU_BKT2 + CPU_BKT3 * MEM_CPU_BKT3))
+	RAM_SURPLUS=$((RAM_BKT1 * MEM_RAM_BKT1 + RAM_BKT2 * MEM_RAM_BKT2))
+	CPU_MEM_SURPLUS=$((CPU_SURPLUS + RAM_SURPLUS)) #in KiB
+	CPU_MEM_SURPLUS=$((CPU_MEM_SURPLUS / 1024)) #in MiB
+}
+
+crashkernel_estimate()
+{
+	CRASHK_EST_ERR=""
+	VMLINUX_PATH="$(realpath "$1")"
+	INITRD_PATH="$(realpath "$2")"
+	KERNEL_VER="${INITRD_PATH#*initrd.img-}"
+
+	if [ -z "${KERNEL_VER}" ]; then
+		CRASHK_EST_ERR="can't parse kernel version from initrd filename"
+		return
+	fi
+
+	if [ ! -f "${KDUMP_DIR}/size_initrd.img-${KERNEL_VER}" ]; then
+		CRASHK_EST_ERR="can't find decompressed initrd size"
+		return
+	fi
+
+        if [ ! -s "${KDUMP_DIR}/size_initrd.img-${KERNEL_VER}" ]; then
+                CRASHK_EST_ERR="zero-sized decompressed initrd size"
+                return
+        fi
+
+        INITRD_DECOMP_SZ=$(cat "${KDUMP_DIR}/size_initrd.img-${KERNEL_VER}")
+
+	if [ ! -f "${KDUMP_DIR}/mem-${KERNEL_VER}" ]; then
+		CRASHK_EST_ERR="can't find early boot memory info, it's only available after a reboot"
+		return
+	fi
+
+	# Here we mimic "free -m" [0], but accounting hugetlb pre-allocated memory;
+	# the formula used to estimate the used memory in the boot time is:
+	# MemTotal - MemFree - Buffer - Cached - SReclaimable - Hugetlb
+	#
+	# [0] https://gitlab.com/procps-ng/procps/-/blob/v4.0.4/library/meminfo.c
+	MEMINFO_FILE="${KDUMP_DIR}/mem-${KERNEL_VER}"
+	MEM_TOTAL=$(grep -w "MemTotal" "${MEMINFO_FILE}" | awk '{print $2}')
+
+	MFREE_FIELDS="MemFree\|Buffers\|Cached\|SReclaimable"
+	MFREE=$(grep -w "${MFREE_FIELDS}" "${MEMINFO_FILE}" | awk '{print $2}' | paste -s -d+ -)
+
+	# NB: seems dash requires the form A=$(($A)) to work properly in this particular
+	# case, or else we get an Illegal Number error. But then shellcheck complains,
+	# hence we're hinting it here to skip this check.
+	# shellcheck disable=SC2004
+	MFREE=$(($MFREE))
+
+	MHUGE=0
+	if grep -q "Hugetlb" "${MEMINFO_FILE}"; then
+		MHUGE=$(grep -w "Hugetlb" "${MEMINFO_FILE}" | awk '{print $2}')
+	fi
+
+	EARLYBOOT_MEM=$((MEM_TOTAL - MFREE - MHUGE)) #in KiB
+	EARLYBOOT_MEM=$((EARLYBOOT_MEM / 1024)) #in MiB
+
+	VMLINUX_SZ=$(du -sm "${VMLINUX_PATH}" | awk '{print $1}')
+	INITRD_SZ=$(du -sm  "${INITRD_PATH}" | awk '{print $1}')
+
+	# Here we estimate the size of the decompressed vmlinux; the commit
+	# message that introduced this function describes the experiment that
+	# led to those values.
+
+	VMLINUX_FACTOR=4 # accounts for arm64 and other archs we didn't experiment
+	case "$ARCH" in
+		"x86_64" | "i386" | "s390x") VMLINUX_FACTOR=6;;
+		"ppc64le" | "powerpc") VMLINUX_FACTOR=2;;
+	esac
+
+	# Final step, we take into account the CPU and Memory surpluses.
+	crashkernel_cpumem_surplus
+
+	VMLINUX_SZ=$((VMLINUX_FACTOR * VMLINUX_SZ))
+	INITRD_TOTAL_SZ=$((INITRD_SZ + INITRD_DECOMP_SZ))
+	CRASHK_EST=$((VMLINUX_SZ + INITRD_TOTAL_SZ + EARLYBOOT_MEM - CPU_MEM_SURPLUS))
+
+	# It's possible that the estimator heuristics goes wrong by underestimating
+	# the required memory, leading to a non-bootable kdump environment. In
+	# order to at least have a bootable system, a basic reasoning lead us to
+	# think that at the very least we should have enough memory to fit the
+	# vmlinux + the initrd (both decompressed) plus some extra memory to
+	# operate the decompression. Hence, we can define a minimum of:
+	# vmlinux decompressed + initrd decompressed + X, where  X is a static
+	# amount of RAM, the bare minimum to get Linux to function - empirically
+	# we set X as 32M (based on x86 experiments).
+
+	MIN_CRASHK=$((VMLINUX_SZ + INITRD_TOTAL_SZ + 32))
+	if [ ${CRASHK_EST} -lt ${MIN_CRASHK} ]; then
+		logger "kdump-tools: Suggested crashkernel below minimum (${CRASHK_EST}), surplus=${CPU_MEM_SURPLUS}"
+		CRASHK_EST="${MIN_CRASHK}"
+	fi
+}
+
 kdump_show()
 {
 	echo "DUMP_MODE:		${DUMP_MODE}"
@@ -172,6 +346,15 @@ kdump_show()
 	else
 		echo "current state:    Not ready to kdump";
 	fi
+	echo
+
+	crashkernel_estimate "${KDUMP_KERNEL}" "${KDUMP_INITRD}"
+	if [ -z "${CRASHK_EST_ERR}" ]; then
+		echo "crashkernel suggested size: ${CRASHK_EST}M"
+	else
+		echo "crashkernel suggested size: Unknown (${CRASHK_EST_ERR})"
+	fi
+
 	echo
 	echo "kexec command:"
 	printf "  "
