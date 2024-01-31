@@ -98,11 +98,29 @@ fi
 
 # we're good - create initramfs.
 echo "kdump-tools: Generating $kdumpdir/initrd.img-${version}"
-if mkinitramfs -d "$initramfsdir" -o "$kdumpdir/initrd.img-${version}.new" "${version}";then
-	mv "$kdumpdir/initrd.img-${version}.new" "$kdumpdir/initrd.img-${version}"
+
+INITRD_TMPDIR="$(mktemp -d)"
+INITRD_FNAME="initrd.img-${version}"
+INITRD_CMDLINE=" -k -d ${initramfsdir} -o ${kdumpdir}/${INITRD_FNAME}.new ${version}"
+
+# NB: we *want* to split on spaces in INITRD_CMDLINE, so disable this check here
+# shellcheck disable=SC2086
+if TMPDIR=${INITRD_TMPDIR} mkinitramfs ${INITRD_CMDLINE} 1>/dev/null; then
+	mv "${kdumpdir}/${INITRD_FNAME}.new" "${kdumpdir}/${INITRD_FNAME}"
+
+	# Retain the initrd decompressed size in order potential users (like
+	# kdump memory estimator) are able to use that in calculations.
+	INITRD_DECOMPRESSED=$(find "${INITRD_TMPDIR}" -maxdepth 1 ! -path "${INITRD_TMPDIR}" -type d)
+
+	if [ -d "${INITRD_DECOMPRESSED}" ]; then
+		du -sm "${INITRD_DECOMPRESSED}" | awk '{print $1}' > "${kdumpdir}/size_${INITRD_FNAME}"
+		sync "${kdumpdir}/size_${INITRD_FNAME}"
+	fi
+	rm -rf "${INITRD_TMPDIR}"
 else
 	mkinitramfs_return="$?"
 	rm -f "$kdumpdir/initrd.img-${version}.new"
 	echo "update-initramfs: failed for $kdumpdir/initrd.img-${version} with $mkinitramfs_return." >&2
+	rm -rf "${INITRD_TMPDIR}"
 	exit $mkinitramfs_return
 fi
