@@ -24,9 +24,10 @@ if [ -n "$DEB_MAINT_PARAMS" ]; then
 	fi
 fi
 
-# delete initramfs and memory estimator files for this kernel
+# delete kdump related data for this kernel (initramfs, estimator/sysctl files)
 echo "kdump-tools: Removing kdump tracking files for kernel version: ${version}"
 if [ -e "$kdumpdir/initrd.img-${version}" ]; then
+	rm -f "$kdumpdir/latest_sysctls-${version}"
 	rm -f "$kdumpdir/mem-${version}"
 	rm -f "$kdumpdir/size_initrd.img-${version}"
 	rm -f "$kdumpdir/initrd.img-${version}"
