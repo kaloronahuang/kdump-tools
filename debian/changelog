@@ -1,3 +1,15 @@
+kdump-tools (1:1.10) UNRELEASED; urgency=medium
+
+  * Introduce a kdump crashkernel memory estimator. This dynamically
+    calculates a suggested value for the `crashkernel` kernel command
+    line parameter and exposes it in `kdump-config show` output. To
+    use this value, an administrator must add it to the bootloader
+    config. For GRUB-based systems, this is
+      /etc/default/grub.d/kdump-tools.cfg
+    Thanks to Guilherme G. Piccoli!
+
+ -- dann frazier <dannf@debian.org>  Tue, 13 Feb 2024 14:00:05 -0700
+
 kdump-tools (1:1.9) unstable; urgency=medium
 
   * Add usrmerge fixes from Chris Hofstaedtler (Closes: #1057798):
