@@ -1,4 +1,4 @@
-kdump-tools (1:1.10) UNRELEASED; urgency=medium
+kdump-tools (1:1.10) unstable; urgency=medium
 
   * Introduce a kdump crashkernel memory estimator. This dynamically
     calculates a suggested value for the `crashkernel` kernel command
@@ -8,7 +8,7 @@ kdump-tools (1:1.10) UNRELEASED; urgency=medium
       /etc/default/grub.d/kdump-tools.cfg
     Thanks to Guilherme G. Piccoli!
 
- -- dann frazier <dannf@debian.org>  Tue, 13 Feb 2024 14:00:05 -0700
+ -- dann frazier <dannf@debian.org>  Wed, 14 Feb 2024 10:02:48 -0700
 
 kdump-tools (1:1.9) unstable; urgency=medium
 
