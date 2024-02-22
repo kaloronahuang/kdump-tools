@@ -77,7 +77,7 @@ case "$AUTOPKGTEST_REBOOT_MARK" in
 	report "checking for crash file"
 	found=false
 	for i in `find /var/crash/ -name dump.*`; do
-		if file $i | grep 'Kdump compressed dump' > /dev/null; then
+		if file $i | grep -i 'kdump compressed dump' > /dev/null; then
 			report "Found compressed dump at $i"
 			found=true
 		else
