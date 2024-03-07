@@ -1,3 +1,10 @@
+kdump-tools (1:1.10.3) UNRELEASED; urgency=medium
+
+  * Mark autopkgtest as skipped for cases where crash kernel size is 0.
+    Thanks to Benjamin Drung.
+
+ -- dann frazier <dannf@debian.org>  Thu, 07 Mar 2024 12:50:21 -0700
+
 kdump-tools (1:1.10.2) unstable; urgency=medium
 
   * debian/tests/crash: Support makedumpfile's flattened format,
