@@ -14,7 +14,7 @@ function report()
 function skip()
 {
 	echo "makedumpfile: SKIP: crash test: $@"
-	exit 0
+	exit 77
 }
 
 function wait_for_systemd_service()
