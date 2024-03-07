@@ -2,18 +2,18 @@
 
 function error()
 {
-	echo "makedumpfile: ERROR: crash test: $@"
+	echo "makedumpfile: ERROR: crash test: $*"
 	exit 1
 }
 
 function report()
 {
-	echo "makedumpfile: crash test: $@"
+	echo "makedumpfile: crash test: $*"
 }
 
 function skip()
 {
-	echo "makedumpfile: SKIP: crash test: $@"
+	echo "makedumpfile: SKIP: crash test: $*"
 	exit 77
 }
 
@@ -51,8 +51,8 @@ case "$AUTOPKGTEST_REBOOT_MARK" in
 		error "no crashkernel option on cmdline"
 	fi
 	report "checking crash kernel size"
-	crksize=`get_crash_kernel_size`
-	if [ $crksize -eq 0 ]; then
+	crksize=$(get_crash_kernel_size)
+	if [ "$crksize" -eq 0 ]; then
 		skip "crash kernel size is 0, possibly not enough memory"
 	fi
 	report "waiting for kdump-tools systemd service"
@@ -76,8 +76,9 @@ case "$AUTOPKGTEST_REBOOT_MARK" in
   crash)
 	report "checking for crash file"
 	found=false
-	for i in `find /var/crash/ -name dump.*`; do
-		if file $i | grep -i 'kdump compressed dump' > /dev/null; then
+	shopt -s globstar nullglob
+	for i in /var/crash/**/dump.*; do
+		if file "$i" | grep -i 'kdump compressed dump' > /dev/null; then
 			report "Found compressed dump at $i"
 			found=true
 		else
