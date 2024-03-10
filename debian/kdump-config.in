@@ -1158,6 +1158,8 @@ kdump_save_core_to_ssh()
 	SSH_TMPDMESG="/tmp/dmesg.ssh.$SSH_STAMP"
 	SSH_DMESGFILE="$SSH_STAMPDIR/dmesg.$SSH_STAMP"
 
+	ERROR=0
+
 	CNT=${SSH_KDUMP_RETRY}
 	while [ "$CNT" -ne 0 ];do
 		ssh -i "$SSH_KEY" "$SSH_REMOTE_HOST" mkdir -p "$SSH_STAMPDIR"
