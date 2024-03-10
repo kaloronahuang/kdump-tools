@@ -78,6 +78,7 @@ case "$AUTOPKGTEST_REBOOT_MARK" in
 	found=false
 	shopt -s globstar nullglob
 	for i in /var/crash/**/dump.*; do
+		report "file $i: $(file "$i")"
 		if file "$i" | grep -i 'kdump compressed dump' > /dev/null; then
 			report "Found compressed dump at $i"
 			found=true
