@@ -5,6 +5,7 @@ kdump-tools (1:1.10.3) UNRELEASED; urgency=medium
   * Extend the shellcheck to files in `debian/tests` and address
     issues it reports in debian/tests/crash. Thanks to Benjamin Drung.
   * debian/tests/crash: Display output of file command to aide debugging.
+  * debian/tests: Test both makedumpfile and non-makedumpfile modes.
 
  -- dann frazier <dannf@debian.org>  Thu, 07 Mar 2024 12:50:21 -0700
 

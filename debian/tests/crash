@@ -77,17 +77,26 @@ case "$AUTOPKGTEST_REBOOT_MARK" in
 	report "checking for crash file"
 	found=false
 	shopt -s globstar nullglob
-	for i in /var/crash/**/dump.*; do
+	if [ -x "$(command -v makedumpfile)" ]; then
+		expected_dump_prefix="dump."
+		expected_dump_type="compressed dump"
+		expected_file_output="kdump compressed dump"
+	else
+		expected_dump_prefix="vmcore."
+		expected_dump_type="core file"
+		expected_file_output="core file"
+	fi
+	for i in /var/crash/**/"${expected_dump_prefix}"*; do
 		report "file $i: $(file "$i")"
-		if file "$i" | grep -i 'kdump compressed dump' > /dev/null; then
-			report "Found compressed dump at $i"
+		if file "$i" | grep -i "$expected_file_output" > /dev/null; then
+			report "Found $expected_dump_type at $i"
 			found=true
 		else
-			error "$i is not a compressed dump"
+			error "$i is not a $expected_dump_type"
 		fi
 	done
 	if [ "$found" = "false" ]; then
-		error "Found no compressed dumps"
+		error "Found no $expected_dump_type"
 	fi
 	;;
 esac

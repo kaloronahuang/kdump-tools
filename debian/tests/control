@@ -1,3 +1,7 @@
 Tests: crash
 Restrictions: breaks-testbed, needs-root, isolation-machine, needs-reboot, skippable
 Depends: file, initramfs-tools-core, @
+
+Tests: crash+makedumpfile
+Restrictions: breaks-testbed, needs-root, isolation-machine, needs-reboot, skippable
+Depends: file, initramfs-tools-core, makedumpfile, @
