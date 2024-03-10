@@ -1,3 +1,9 @@
+kdump-tools (1:1.10.4) UNRELEASED; urgency=medium
+
+  * debian/tests/crash: Use correct package name in log output.
+
+ -- dann frazier <dannf@debian.org>  Sun, 10 Mar 2024 16:13:40 -0600
+
 kdump-tools (1:1.10.3) unstable; urgency=medium
 
   * Mark autopkgtest as skipped for cases where crash kernel size is 0.

@@ -2,18 +2,18 @@
 
 function error()
 {
-	echo "makedumpfile: ERROR: crash test: $*"
+	echo "kdump-tools: ERROR: crash test: $*"
 	exit 1
 }
 
 function report()
 {
-	echo "makedumpfile: crash test: $*"
+	echo "kdump-tools: crash test: $*"
 }
 
 function skip()
 {
-	echo "makedumpfile: SKIP: crash test: $*"
+	echo "kdump-tools: SKIP: crash test: $*"
 	exit 77
 }
 
