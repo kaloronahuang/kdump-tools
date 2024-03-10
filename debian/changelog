@@ -1,4 +1,4 @@
-kdump-tools (1:1.10.3) UNRELEASED; urgency=medium
+kdump-tools (1:1.10.3) unstable; urgency=medium
 
   * Mark autopkgtest as skipped for cases where crash kernel size is 0.
     Thanks to Benjamin Drung.
@@ -8,7 +8,7 @@ kdump-tools (1:1.10.3) UNRELEASED; urgency=medium
   * debian/tests: Test both makedumpfile and non-makedumpfile modes.
   * kdump-config: Fix support for non-makedumpfile mode.
 
- -- dann frazier <dannf@debian.org>  Thu, 07 Mar 2024 12:50:21 -0700
+ -- dann frazier <dannf@debian.org>  Sun, 10 Mar 2024 16:03:53 -0600
 
 kdump-tools (1:1.10.2) unstable; urgency=medium
 
