@@ -38,6 +38,9 @@ fi
 KDUMP_DEFAULTS=/etc/default/kdump-tools
 [ -r $KDUMP_DEFAULTS ] && . $KDUMP_DEFAULTS
 
+KBDR_DEFAULTS=/etc/default/kbdr-config
+[ -r $KBDR_DEFAULTS ] && . $KBDR_DEFAULTS
+
 KEXEC=/sbin/kexec
 
 KVER=$(uname -r)
@@ -1140,6 +1143,58 @@ kdump_save_core_to_ftp()
 	else
 		log_success_msg "$NAME: saved vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
 		logger -t "$NAME" "saved vmcore via FTP in $FTP_REMOTE_HOST:$FTP_COREFILE"
+	fi
+
+	return $ERROR
+}
+
+kdump_save_core_to_kgym()
+{
+	KGYM_UPLOADER="$KGYM_UPLOADER"
+
+	KGYM_TMPDMESG="/tmp/dmesg.ssh"
+
+	# dump the dmesg buffer
+	if [ "$KDUMP_DUMP_DMESG" -eq 1 ] ; then
+		dump_dmesg $vmcore_file "$KGYM_TMPDMESG"
+		ERROR=$?
+		case "$ERROR" in
+			0)
+				$KGYM_UPLOADER "dmesg" "$KGYM_TMPDMESG"
+				ERROR=$?
+				;;
+			77)
+				ERROR=0
+				;;
+			*)
+				;;
+		esac
+
+		if [ "$ERROR" -eq 0 ]; then
+			log_success_msg "$NAME: [01642e3 kGym.Collector.GCP.UploadDMesgSuccess]"
+			logger -t "$NAME" "[01642e3 kGym.Collector.GCP.UploadDMesgSuccess]"
+		else
+			log_failure_msg "$NAME: [01642e3 kGym.Collector.GCP.UploadDMesgFailure]"
+			logger -t "$NAME" "[01642e3 kGym.Collector.GCP.UploadDMesgFailure]"
+		fi
+	fi
+
+	if have_makedumpfile; then
+		log_action_msg "[01642e3 kGym.Collector.GCP.kDumpCollectionBegin]"
+		# shellcheck disable=SC2086
+		makedumpfile $MAKEDUMP_ARGS $vmcore_file | compress | $KGYM_UPLOADER --stdin "kdump"
+		ERROR=$?
+	else
+		ERROR=1
+	fi
+
+	# did we succeed?
+	if [ $ERROR -ne 0 ]; then
+		log_failure_msg "[01642e3 kGym.Collector.GCP.kDumpCollectionFailed]"
+		logger -t "$NAME" "[01642e3 kGym.Collector.GCP.kDumpCollectionFailed]"
+	else
+		log_success_msg "$NAME: [01642e3 kGym.Collector.GCP.kDumpCollectionSuccess]"
+		logger -t "$NAME" "[01642e3 kGym.Collector.GCP.kDumpCollectionSuccess]"
 	fi
 
 	return $ERROR
